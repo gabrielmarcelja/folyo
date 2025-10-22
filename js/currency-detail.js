@@ -125,33 +125,46 @@ const CurrencyDetail = {
 
             let count;
             let interval = 'daily';
+            let timePeriod = 'daily';
 
             switch (period) {
                 case '24h':
-                    count = 25; // 24 hours + 1
+                    count = 26; // 24 hours + 1 for current incomplete period + 1 per API docs
                     interval = 'hourly';
+                    timePeriod = 'hourly';
                     break;
                 case '7d':
-                    count = 8; // 7 days + 1
-                    interval = 'daily';
+                    count = 85; // 7 days * 12 points per day (every 2 hours) + 1
+                    interval = '2h'; // Sample every 2 hours for more detail
+                    timePeriod = 'hourly';
                     break;
                 case '30d':
-                    count = 31; // 30 days + 1
-                    interval = 'daily';
+                    count = 121; // 30 days * 4 points per day (every 6 hours) + 1
+                    interval = '6h'; // Sample every 6 hours for good balance
+                    timePeriod = 'hourly';
                     break;
                 default:
                     count = 8;
                     interval = 'daily';
+                    timePeriod = 'daily';
             }
 
             const currency = CurrencyManager.getCurrency();
-            const ohlcvResponse = await API.getOHLCVHistorical(this.cryptoId, count, currency, interval);
+            const ohlcvResponse = await API.getOHLCVHistorical(this.cryptoId, count, currency, interval, timePeriod);
 
             // Debug log for 24h period
             if (period === '24h') {
-                console.log('24h Period - Full API Response:', ohlcvResponse);
-                console.log('24h Period - Response Status:', ohlcvResponse.status);
-                console.log('24h Period - Response Data:', ohlcvResponse.data);
+                console.log('=== 24h Period Debug ===');
+                console.log('Request Parameters:', { cryptoId: this.cryptoId, count, currency, interval });
+                console.log('Full API Response:', ohlcvResponse);
+                console.log('Response Status:', ohlcvResponse.status);
+                if (ohlcvResponse.status && ohlcvResponse.status.error_message) {
+                    console.error('API Error Message:', ohlcvResponse.status.error_message);
+                }
+                if (ohlcvResponse.status && ohlcvResponse.status.notice) {
+                    console.warn('API Notice:', ohlcvResponse.status.notice);
+                }
+                console.log('Response Data:', ohlcvResponse.data);
             }
 
             // Extract OHLCV data
@@ -202,7 +215,7 @@ const CurrencyDetail = {
                 if (cryptoData.quotes.length < 10) {
                     console.warn('24h - Insufficient hourly data, falling back to daily data');
                     // Retry with daily interval (last 2 days)
-                    const fallbackResponse = await API.getOHLCVHistorical(this.cryptoId, 3, currency, 'daily');
+                    const fallbackResponse = await API.getOHLCVHistorical(this.cryptoId, 3, currency, 'daily', 'daily');
 
                     if (fallbackResponse.data && fallbackResponse.data.quotes) {
                         cryptoData = fallbackResponse.data;

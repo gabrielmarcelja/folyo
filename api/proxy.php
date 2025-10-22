@@ -96,7 +96,8 @@ switch ($endpoint) {
         }
         $count = $_GET['count'] ?? '8';
         $interval = $_GET['interval'] ?? 'daily';
-        $url = "$baseUrl/v2/cryptocurrency/ohlcv/historical?id=$ids&count=$count&interval=$interval&convert=$convert";
+        $timePeriod = $_GET['time_period'] ?? 'daily';
+        $url = "$baseUrl/v2/cryptocurrency/ohlcv/historical?id=$ids&count=$count&time_period=$timePeriod&interval=$interval&convert=$convert";
         break;
 
     default:

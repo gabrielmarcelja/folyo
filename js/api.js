@@ -173,11 +173,12 @@ const API = {
      * @param {number} count - Number of data points (default 8 for 7 days)
      * @param {string} convert - Currency to convert to
      * @param {string} interval - Time interval (daily or hourly)
+     * @param {string} timePeriod - Time period aggregate (daily or hourly)
      * @returns {Promise}
      */
-    async getOHLCVHistorical(ids, count = 8, convert = 'USD', interval = 'daily') {
+    async getOHLCVHistorical(ids, count = 8, convert = 'USD', interval = 'daily', timePeriod = 'daily') {
         try {
-            const url = `${CONFIG.API_BASE_URL}?endpoint=ohlcv-historical&ids=${ids}&count=${count}&interval=${interval}&convert=${convert}`;
+            const url = `${CONFIG.API_BASE_URL}?endpoint=ohlcv-historical&ids=${ids}&count=${count}&interval=${interval}&time_period=${timePeriod}&convert=${convert}`;
             const response = await fetch(url);
 
             if (!response.ok) {
