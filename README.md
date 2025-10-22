@@ -111,8 +111,4 @@ Contribuições são bem-vindas! Por favor:
 4. Push para a branch: `git push origin feature/nova-funcionalidade`
 5. Abra um Pull Request
 
-## 📝 Licença
-
-Este projeto é para fins educacionais. Os dados são fornecidos pela [CoinMarketCap API](https://coinmarketcap.com/api/).
-
 **Desenvolvido com ❤️ usando HTML, CSS, JavaScript e PHP**
