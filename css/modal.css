@@ -17,6 +17,14 @@
     animation: fadeIn 0.2s ease-out;
 }
 
+.theme-light .modal {
+    background-color: rgba(0, 0, 0, 0.5);
+}
+
+.theme-dark .modal {
+    background-color: rgba(0, 0, 0, 0.7);
+}
+
 .modal.active {
     display: flex;
     justify-content: center;
@@ -27,12 +35,21 @@
 .modal-content {
     background-color: var(--bg-primary);
     border-radius: 12px;
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
     width: 90%;
     max-width: 440px;
     max-height: 90vh;
     overflow-y: auto;
     animation: slideUp 0.3s ease-out;
+}
+
+.theme-light .modal-content {
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+    border: 1px solid var(--border-color);
+}
+
+.theme-dark .modal-content {
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+    border: 1px solid var(--border-color);
 }
 
 /* Modal header */
