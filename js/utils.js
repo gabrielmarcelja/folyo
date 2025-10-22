@@ -58,7 +58,21 @@ const Utils = {
     },
 
     /**
-     * Format market cap or volume
+     * Format full number with commas (no suffixes)
+     * @param {number} num
+     * @returns {string}
+     */
+    formatFullNumber(num) {
+        if (num === null || num === undefined) return '-';
+
+        return num.toLocaleString('en-US', {
+            minimumFractionDigits: 0,
+            maximumFractionDigits: 0
+        });
+    },
+
+    /**
+     * Format market cap or volume with full number precision
      * @param {number} value
      * @param {string} currency
      * @returns {string}
@@ -67,7 +81,7 @@ const Utils = {
         if (value === null || value === undefined) return '-';
 
         const symbol = CONFIG.CURRENCY_SYMBOLS[currency] || '$';
-        return symbol + this.formatNumber(value, 2);
+        return symbol + this.formatFullNumber(value);
     },
 
     /**
@@ -91,7 +105,7 @@ const Utils = {
     formatSupply(supply, symbol) {
         if (supply === null || supply === undefined) return '-';
 
-        return `${this.formatNumber(supply, 0)} ${symbol.toUpperCase()}`;
+        return `${this.formatNumber(supply, 2)} ${symbol.toUpperCase()}`;
     },
 
     /**
