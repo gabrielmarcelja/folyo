@@ -326,6 +326,18 @@ body {
     background-color: var(--bg-hover);
 }
 
+.crypto-row-clickable {
+    cursor: pointer;
+}
+
+.crypto-row-clickable:hover {
+    background-color: var(--bg-hover);
+}
+
+.crypto-row-clickable:active {
+    background-color: var(--border-color);
+}
+
 .crypto-table td {
     padding: 16px 12px;
     font-size: 14px;

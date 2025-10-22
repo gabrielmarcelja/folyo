@@ -95,13 +95,22 @@ const API = {
     },
 
     /**
-     * Fetch cryptocurrency info (for logos, etc.)
-     * @param {string} ids
+     * Fetch cryptocurrency info (metadata, logo, description, urls, etc.)
+     * @param {string} identifier - ID, slug, or symbol
+     * @param {string} identifierType - 'id', 'slug', or 'symbol'
      * @returns {Promise}
      */
-    async getCryptoInfo(ids) {
+    async getCryptoInfo(identifier, identifierType = 'id') {
         try {
-            const url = `${CONFIG.API_BASE_URL}?endpoint=crypto-info&ids=${ids}`;
+            let url;
+            if (identifierType === 'slug') {
+                url = `${CONFIG.API_BASE_URL}?endpoint=crypto-info&slug=${identifier}`;
+            } else if (identifierType === 'symbol') {
+                url = `${CONFIG.API_BASE_URL}?endpoint=crypto-info&symbol=${identifier}`;
+            } else {
+                url = `${CONFIG.API_BASE_URL}?endpoint=crypto-info&ids=${identifier}`;
+            }
+
             const response = await fetch(url);
 
             if (!response.ok) {
@@ -122,18 +131,57 @@ const API = {
     },
 
     /**
+     * Fetch cryptocurrency quotes (current prices, market data)
+     * @param {string} identifier - ID, slug, or symbol
+     * @param {string} identifierType - 'id', 'slug', or 'symbol'
+     * @param {string} convert - Currency to convert to
+     * @returns {Promise}
+     */
+    async getCryptoQuotes(identifier, identifierType = 'id', convert = 'USD') {
+        try {
+            let url;
+            if (identifierType === 'slug') {
+                url = `${CONFIG.API_BASE_URL}?endpoint=crypto-quotes&slug=${identifier}&convert=${convert}`;
+            } else if (identifierType === 'symbol') {
+                url = `${CONFIG.API_BASE_URL}?endpoint=crypto-quotes&symbol=${identifier}&convert=${convert}`;
+            } else {
+                url = `${CONFIG.API_BASE_URL}?endpoint=crypto-quotes&ids=${identifier}&convert=${convert}`;
+            }
+
+            const response = await fetch(url);
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            const data = await response.json();
+
+            if (data.status && data.status.error_code !== 0) {
+                throw new Error(data.status.error_message || 'API Error');
+            }
+
+            return data;
+        } catch (error) {
+            console.error('Error fetching crypto quotes:', error);
+            throw error;
+        }
+    },
+
+    /**
      * Fetch historical OHLCV data for sparklines
      * @param {string} ids - Comma-separated cryptocurrency IDs
      * @param {number} count - Number of data points (default 8 for 7 days)
      * @param {string} convert - Currency to convert to
+     * @param {string} interval - Time interval (daily or hourly)
      * @returns {Promise}
      */
-    async getOHLCVHistorical(ids, count = 8, convert = 'USD') {
+    async getOHLCVHistorical(ids, count = 8, convert = 'USD', interval = 'daily') {
         try {
-            const url = `${CONFIG.API_BASE_URL}?endpoint=ohlcv-historical&ids=${ids}&count=${count}&interval=daily&convert=${convert}`;
+            const url = `${CONFIG.API_BASE_URL}?endpoint=ohlcv-historical&ids=${ids}&count=${count}&interval=${interval}&convert=${convert}`;
             const response = await fetch(url);
 
             if (!response.ok) {
+                const errorText = await response.text();
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
 

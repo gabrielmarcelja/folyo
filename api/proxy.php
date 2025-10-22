@@ -38,6 +38,8 @@ $start = $_GET['start'] ?? '1';
 $limit = $_GET['limit'] ?? '100';
 $convert = $_GET['convert'] ?? 'USD';
 $ids = $_GET['ids'] ?? '';
+$slug = $_GET['slug'] ?? '';
+$symbol = $_GET['symbol'] ?? '';
 
 // Base URL
 $baseUrl = 'https://pro-api.coinmarketcap.com';
@@ -59,12 +61,31 @@ switch ($endpoint) {
         break;
 
     case 'crypto-info':
-        if (empty($ids)) {
+        if (empty($ids) && empty($slug)) {
             http_response_code(400);
-            echo json_encode(['error' => 'Missing ids parameter']);
+            echo json_encode(['error' => 'Missing ids or slug parameter']);
             exit;
         }
-        $url = "$baseUrl/v2/cryptocurrency/info?id=$ids";
+        $params = [];
+        if (!empty($ids)) $params[] = "id=$ids";
+        if (!empty($slug)) $params[] = "slug=$slug";
+        $queryString = implode('&', $params);
+        $url = "$baseUrl/v2/cryptocurrency/info?$queryString";
+        break;
+
+    case 'crypto-quotes':
+        if (empty($ids) && empty($slug) && empty($symbol)) {
+            http_response_code(400);
+            echo json_encode(['error' => 'Missing ids, slug, or symbol parameter']);
+            exit;
+        }
+        $params = [];
+        if (!empty($ids)) $params[] = "id=$ids";
+        if (!empty($slug)) $params[] = "slug=$slug";
+        if (!empty($symbol)) $params[] = "symbol=$symbol";
+        $params[] = "convert=$convert";
+        $queryString = implode('&', $params);
+        $url = "$baseUrl/v2/cryptocurrency/quotes/latest?$queryString";
         break;
 
     case 'ohlcv-historical':

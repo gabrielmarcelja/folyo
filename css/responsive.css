@@ -110,6 +110,23 @@
         border: 1px solid var(--border-color);
         border-radius: 12px;
         padding: 16px;
+        transition: all 0.2s ease;
+    }
+
+    .crypto-card-clickable {
+        cursor: pointer;
+    }
+
+    .crypto-card-clickable:hover {
+        background-color: var(--bg-hover);
+        border-color: var(--text-secondary);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    .crypto-card-clickable:active {
+        transform: translateY(0);
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
     }
 
     .crypto-card-header {

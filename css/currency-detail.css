@@ -1,0 +1,635 @@
+/**
+ * Currency Detail Page Styles
+ */
+
+/* Main Content */
+.main-content {
+    min-height: calc(100vh - 200px);
+    padding: 24px 0 48px;
+}
+
+/* Breadcrumb */
+.breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 24px;
+    font-size: 14px;
+}
+
+.breadcrumb-item {
+    color: var(--text-secondary);
+    text-decoration: none;
+    transition: color 0.2s;
+}
+
+.breadcrumb-item:hover {
+    color: var(--text-primary);
+}
+
+.breadcrumb-item.active {
+    color: var(--text-primary);
+    font-weight: 500;
+}
+
+.breadcrumb-separator {
+    color: var(--text-secondary);
+}
+
+/* Crypto Header */
+.crypto-header {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 32px;
+    align-items: start;
+    padding: 24px;
+    background-color: var(--bg-secondary);
+    border-radius: 12px;
+    margin-bottom: 24px;
+}
+
+.crypto-title {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.crypto-logo {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+}
+
+.crypto-name-section {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.crypto-name {
+    font-size: 32px;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0;
+    line-height: 1.2;
+}
+
+.crypto-symbol {
+    display: inline-block;
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    background-color: var(--bg-primary);
+    padding: 4px 12px;
+    border-radius: 6px;
+    margin-right: 8px;
+}
+
+.crypto-rank {
+    display: inline-block;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    background-color: var(--bg-primary);
+    padding: 4px 12px;
+    border-radius: 6px;
+}
+
+.crypto-price-section {
+    display: flex;
+    justify-content: flex-end;
+}
+
+.price-info {
+    text-align: right;
+}
+
+.price-label {
+    font-size: 14px;
+    color: var(--text-secondary);
+    display: block;
+    margin-bottom: 4px;
+}
+
+.price-value {
+    font-size: 36px;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0 0 8px 0;
+}
+
+.price-changes {
+    display: flex;
+    gap: 12px;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+}
+
+.price-change {
+    font-size: 14px;
+    font-weight: 600;
+    padding: 6px 12px;
+    border-radius: 6px;
+    display: inline-block;
+}
+
+.price-change.positive {
+    color: var(--green);
+    background-color: rgba(22, 199, 132, 0.1);
+}
+
+.price-change.negative {
+    color: var(--red);
+    background-color: rgba(234, 57, 67, 0.1);
+}
+
+/* Stats Grid */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 16px;
+    margin-bottom: 32px;
+}
+
+.stat-card {
+    background-color: var(--bg-secondary);
+    padding: 20px;
+    border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.stat-label {
+    font-size: 14px;
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+
+.stat-value {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.stat-rank {
+    font-size: 12px;
+    color: var(--text-secondary);
+}
+
+/* Chart Section */
+.chart-section {
+    background-color: var(--bg-secondary);
+    padding: 24px;
+    border-radius: 12px;
+    margin-bottom: 32px;
+}
+
+.chart-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+    gap: 16px;
+}
+
+.chart-header h3 {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0;
+}
+
+.chart-controls {
+    display: flex;
+    gap: 8px;
+}
+
+.chart-period-btn {
+    padding: 8px 16px;
+    border: 1px solid var(--border-color);
+    background-color: var(--bg-primary);
+    color: var(--text-secondary);
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.chart-period-btn:hover:not(.disabled) {
+    background-color: var(--bg-hover);
+    border-color: var(--text-secondary);
+}
+
+.chart-period-btn.active {
+    background-color: var(--blue);
+    color: #FFFFFF;
+    border-color: var(--blue);
+}
+
+.chart-period-btn.disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+.chart-container {
+    width: 100%;
+    height: 400px;
+    position: relative;
+}
+
+.chart-container canvas {
+    width: 100%;
+    height: 100%;
+}
+
+/* Info Tabs */
+.info-tabs {
+    background-color: var(--bg-secondary);
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.tab-buttons {
+    display: flex;
+    gap: 0;
+    border-bottom: 1px solid var(--border-color);
+    padding: 0 24px;
+}
+
+.tab-btn {
+    padding: 16px 24px;
+    background: none;
+    border: none;
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    cursor: pointer;
+    position: relative;
+    transition: color 0.2s;
+}
+
+.tab-btn:hover {
+    color: var(--text-primary);
+}
+
+.tab-btn.active {
+    color: var(--blue);
+}
+
+.tab-btn.active::after {
+    content: '';
+    position: absolute;
+    bottom: -1px;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background-color: var(--blue);
+}
+
+.tab-content {
+    padding: 24px;
+}
+
+.tab-pane {
+    display: none;
+}
+
+.tab-pane.active {
+    display: block;
+}
+
+/* Overview Tab */
+.overview-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 20px;
+}
+
+.overview-item {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.overview-label {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-secondary);
+}
+
+.overview-value {
+    font-size: 16px;
+    color: var(--text-primary);
+}
+
+.overview-value a {
+    color: var(--blue);
+    text-decoration: none;
+}
+
+.overview-value a:hover {
+    text-decoration: underline;
+}
+
+/* About Tab */
+.about-content {
+    max-width: 900px;
+}
+
+.about-content h3 {
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0 0 16px 0;
+}
+
+.about-description {
+    font-size: 16px;
+    line-height: 1.6;
+    color: var(--text-primary);
+}
+
+.about-description p {
+    margin-bottom: 16px;
+}
+
+.about-description a {
+    color: var(--blue);
+    text-decoration: none;
+}
+
+.about-description a:hover {
+    text-decoration: underline;
+}
+
+/* Links Tab */
+.links-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 24px;
+}
+
+.links-section h4 {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0 0 12px 0;
+}
+
+.links-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.link-item {
+    display: block;
+    color: var(--blue);
+    text-decoration: none;
+    font-size: 14px;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--border-color);
+    word-break: break-all;
+}
+
+.link-item:last-child {
+    border-bottom: none;
+}
+
+.link-item:hover {
+    text-decoration: underline;
+}
+
+.no-links {
+    font-size: 14px;
+    color: var(--text-secondary);
+    font-style: italic;
+}
+
+/* Loading State */
+.loading {
+    text-align: center;
+    padding: 80px 20px;
+}
+
+.spinner {
+    width: 48px;
+    height: 48px;
+    border: 4px solid var(--border-color);
+    border-top-color: var(--blue);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    margin: 0 auto 16px;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+.loading p {
+    font-size: 16px;
+    color: var(--text-secondary);
+}
+
+/* Error State */
+.error-message {
+    text-align: center;
+    padding: 80px 20px;
+}
+
+.error-message p {
+    font-size: 18px;
+    color: var(--red);
+    margin-bottom: 24px;
+}
+
+.btn-secondary {
+    padding: 12px 24px;
+    background-color: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text-primary);
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-secondary:hover {
+    background-color: var(--bg-hover);
+    border-color: var(--text-secondary);
+}
+
+/* Responsive Design */
+
+/* Tablet */
+@media (max-width: 1024px) {
+    .crypto-header {
+        grid-template-columns: 1fr;
+        gap: 24px;
+    }
+
+    .crypto-price-section {
+        justify-content: flex-start;
+    }
+
+    .price-info {
+        text-align: left;
+    }
+
+    .price-changes {
+        justify-content: flex-start;
+    }
+
+    .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .overview-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .links-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Mobile */
+@media (max-width: 768px) {
+    .main-content {
+        padding: 16px 0 32px;
+    }
+
+    .breadcrumb {
+        font-size: 12px;
+        margin-bottom: 16px;
+    }
+
+    .crypto-header {
+        padding: 16px;
+    }
+
+    .crypto-title {
+        gap: 12px;
+    }
+
+    .crypto-logo {
+        width: 48px;
+        height: 48px;
+    }
+
+    .crypto-name {
+        font-size: 24px;
+    }
+
+    .crypto-symbol,
+    .crypto-rank {
+        font-size: 12px;
+        padding: 3px 8px;
+    }
+
+    .price-value {
+        font-size: 28px;
+    }
+
+    .price-changes {
+        gap: 8px;
+    }
+
+    .price-change {
+        font-size: 12px;
+        padding: 4px 8px;
+    }
+
+    .stats-grid {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+
+    .stat-card {
+        padding: 16px;
+    }
+
+    .chart-section {
+        padding: 16px;
+    }
+
+    .chart-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .chart-header h3 {
+        font-size: 18px;
+    }
+
+    .chart-controls {
+        width: 100%;
+        justify-content: space-between;
+        gap: 4px;
+    }
+
+    .chart-period-btn {
+        padding: 6px 12px;
+        font-size: 12px;
+        flex: 1;
+    }
+
+    .chart-container {
+        height: 300px;
+    }
+
+    .tab-buttons {
+        padding: 0 16px;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .tab-btn {
+        padding: 12px 16px;
+        font-size: 14px;
+        white-space: nowrap;
+    }
+
+    .tab-content {
+        padding: 16px;
+    }
+
+    .about-content h3 {
+        font-size: 20px;
+    }
+
+    .about-description {
+        font-size: 14px;
+    }
+
+    .links-section h4 {
+        font-size: 14px;
+    }
+
+    .link-item {
+        font-size: 12px;
+    }
+}
+
+/* Small Mobile */
+@media (max-width: 480px) {
+    .crypto-name {
+        font-size: 20px;
+    }
+
+    .price-value {
+        font-size: 24px;
+    }
+
+    .stat-value {
+        font-size: 18px;
+    }
+
+    .chart-container {
+        height: 250px;
+    }
+}

@@ -237,6 +237,8 @@ const UI = {
             const quote = crypto.quote?.[currency] || crypto.quote?.USD || {};
 
             const row = document.createElement('tr');
+            row.className = 'crypto-row-clickable';
+            row.dataset.slug = crypto.slug;
             row.innerHTML = `
                 <td class="crypto-rank">${crypto.cmc_rank || '-'}</td>
                 <td>
@@ -266,6 +268,11 @@ const UI = {
                     </div>
                 </td>
             `;
+
+            // Make row clickable
+            row.addEventListener('click', () => {
+                window.location.href = `currency.html?slug=${crypto.slug}`;
+            });
 
             tbody.appendChild(row);
         });
@@ -308,7 +315,8 @@ const UI = {
             const quote = crypto.quote?.[currency] || crypto.quote?.USD || {};
 
             const card = document.createElement('div');
-            card.className = 'crypto-card';
+            card.className = 'crypto-card crypto-card-clickable';
+            card.dataset.slug = crypto.slug;
             card.innerHTML = `
                 <div class="crypto-card-header">
                     <div class="crypto-card-rank">#${crypto.cmc_rank || '-'}</div>
@@ -342,6 +350,11 @@ const UI = {
                     </div>
                 </div>
             `;
+
+            // Make card clickable
+            card.addEventListener('click', () => {
+                window.location.href = `currency.html?slug=${crypto.slug}`;
+            });
 
             cardsContainer.appendChild(card);
         });

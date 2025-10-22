@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Cryptocurrency price charts, market cap, volume and detailed information">
+    <title id="page-title">Cryptocurrency Details | Folyo</title>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+    <!-- Stylesheets -->
+    <link rel="stylesheet" href="css/themes.css">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/currency-detail.css">
+    <link rel="stylesheet" href="css/responsive.css">
+</head>
+<body class="theme-light">
+    <!-- Header -->
+    <header class="header">
+        <div class="container">
+            <div class="header-top">
+                <!-- Logo -->
+                <div class="logo">
+                    <a href="index.html">
+                        <h1>Folyo</h1>
+                    </a>
+                </div>
+
+                <!-- Navigation -->
+                <nav class="nav">
+                    <a href="index.html" class="nav-link">Cryptocurrencies</a>
+                    <a href="#" class="nav-link">Portfolio</a>
+                    <a href="#" class="nav-link">Watchlist</a>
+                </nav>
+
+                <!-- Header Actions -->
+                <div class="header-actions">
+                    <!-- Currency Selector -->
+                    <div class="currency-selector">
+                        <select id="currency-select" class="currency-select">
+                            <option value="USD" data-symbol="$">USD 🇺🇸</option>
+                            <option value="EUR" data-symbol="€">EUR 🇪🇺</option>
+                            <option value="BRL" data-symbol="R$">BRL 🇧🇷</option>
+                            <option value="GBP" data-symbol="£">GBP 🇬🇧</option>
+                            <option value="JPY" data-symbol="¥">JPY 🇯🇵</option>
+                            <option value="AUD" data-symbol="$">AUD 🇦🇺</option>
+                            <option value="CAD" data-symbol="$">CAD 🇨🇦</option>
+                            <option value="CHF" data-symbol="Fr">CHF 🇨🇭</option>
+                            <option value="CNY" data-symbol="¥">CNY 🇨🇳</option>
+                            <option value="KRW" data-symbol="₩">KRW 🇰🇷</option>
+                            <option value="INR" data-symbol="₹">INR 🇮🇳</option>
+                            <option value="MXN" data-symbol="$">MXN 🇲🇽</option>
+                            <option value="RUB" data-symbol="₽">RUB 🇷🇺</option>
+                        </select>
+                    </div>
+
+                    <!-- Theme Toggle -->
+                    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle theme">
+                        <span class="theme-icon theme-icon-sun">☀️</span>
+                        <span class="theme-icon theme-icon-moon">🌙</span>
+                    </button>
+
+                    <!-- Login Button -->
+                    <button class="btn-login" aria-label="Login">
+                        Login
+                    </button>
+
+                    <!-- Signup Button -->
+                    <button class="btn-signup" aria-label="Sign up">
+                        Sign Up
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <div class="container">
+            <!-- Breadcrumb -->
+            <nav class="breadcrumb" aria-label="breadcrumb">
+                <a href="index.html" class="breadcrumb-item">Cryptocurrencies</a>
+                <span class="breadcrumb-separator">/</span>
+                <span class="breadcrumb-item active" id="breadcrumb-name">...</span>
+            </nav>
+
+            <!-- Loading State -->
+            <div id="loading" class="loading" style="display: none;">
+                <div class="spinner"></div>
+                <p>Loading cryptocurrency data...</p>
+            </div>
+
+            <!-- Error State -->
+            <div id="error" class="error-message" style="display: none;">
+                <p id="error-message"></p>
+                <button onclick="window.location.href='index.html'" class="btn-secondary">Back to Home</button>
+            </div>
+
+            <!-- Currency Detail Container -->
+            <div id="currency-detail" class="currency-detail" style="display: none;">
+                <!-- Crypto Header -->
+                <div class="crypto-header">
+                    <div class="crypto-title">
+                        <img id="crypto-logo" src="" alt="" class="crypto-logo">
+                        <div class="crypto-name-section">
+                            <h1 class="crypto-name" id="crypto-name">-</h1>
+                            <span class="crypto-symbol" id="crypto-symbol">-</span>
+                            <span class="crypto-rank" id="crypto-rank">-</span>
+                        </div>
+                    </div>
+
+                    <div class="crypto-price-section">
+                        <div class="price-info">
+                            <span class="price-label">Price</span>
+                            <h2 class="price-value" id="crypto-price">$0.00</h2>
+                            <div class="price-changes">
+                                <span class="price-change" id="change-1h">-</span>
+                                <span class="price-change" id="change-24h">-</span>
+                                <span class="price-change" id="change-7d">-</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Stats Grid -->
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <span class="stat-label">Market Cap</span>
+                        <span class="stat-value" id="stat-market-cap">-</span>
+                        <span class="stat-rank" id="stat-market-cap-rank"></span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-label">Volume (24h)</span>
+                        <span class="stat-value" id="stat-volume">-</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-label">Circulating Supply</span>
+                        <span class="stat-value" id="stat-circulating">-</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-label">Total Supply</span>
+                        <span class="stat-value" id="stat-total">-</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-label">Max Supply</span>
+                        <span class="stat-value" id="stat-max">-</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-label">Fully Diluted Market Cap</span>
+                        <span class="stat-value" id="stat-fdv">-</span>
+                    </div>
+                </div>
+
+                <!-- Chart Section -->
+                <div class="chart-section">
+                    <div class="chart-header">
+                        <h3>Price Chart</h3>
+                        <div class="chart-controls">
+                            <button class="chart-period-btn" data-period="24h" title="Recent days">24H</button>
+                            <button class="chart-period-btn active" data-period="7d">7D</button>
+                            <button class="chart-period-btn" data-period="30d">30D</button>
+                            <button class="chart-period-btn disabled" data-period="90d" title="Upgrade required">90D</button>
+                            <button class="chart-period-btn disabled" data-period="1y" title="Upgrade required">1Y</button>
+                            <button class="chart-period-btn disabled" data-period="all" title="Upgrade required">ALL</button>
+                        </div>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="price-chart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Info Tabs -->
+                <div class="info-tabs">
+                    <div class="tab-buttons">
+                        <button class="tab-btn active" data-tab="overview">Overview</button>
+                        <button class="tab-btn" data-tab="about">About</button>
+                        <button class="tab-btn" data-tab="links">Links</button>
+                    </div>
+
+                    <div class="tab-content">
+                        <!-- Overview Tab -->
+                        <div class="tab-pane active" id="tab-overview">
+                            <div class="overview-grid">
+                                <div class="overview-item">
+                                    <span class="overview-label">Website</span>
+                                    <span class="overview-value" id="overview-website">-</span>
+                                </div>
+                                <div class="overview-item">
+                                    <span class="overview-label">Explorers</span>
+                                    <span class="overview-value" id="overview-explorers">-</span>
+                                </div>
+                                <div class="overview-item">
+                                    <span class="overview-label">Community</span>
+                                    <span class="overview-value" id="overview-community">-</span>
+                                </div>
+                                <div class="overview-item">
+                                    <span class="overview-label">Tags</span>
+                                    <span class="overview-value" id="overview-tags">-</span>
+                                </div>
+                                <div class="overview-item">
+                                    <span class="overview-label">Platform</span>
+                                    <span class="overview-value" id="overview-platform">-</span>
+                                </div>
+                                <div class="overview-item">
+                                    <span class="overview-label">Date Added</span>
+                                    <span class="overview-value" id="overview-date">-</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- About Tab -->
+                        <div class="tab-pane" id="tab-about">
+                            <div class="about-content">
+                                <h3 id="about-title">About</h3>
+                                <div id="about-description" class="about-description">
+                                    Loading description...
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Links Tab -->
+                        <div class="tab-pane" id="tab-links">
+                            <div class="links-grid">
+                                <div class="links-section">
+                                    <h4>Website</h4>
+                                    <div id="links-website" class="links-list">-</div>
+                                </div>
+                                <div class="links-section">
+                                    <h4>Explorers</h4>
+                                    <div id="links-explorers" class="links-list">-</div>
+                                </div>
+                                <div class="links-section">
+                                    <h4>Social Media</h4>
+                                    <div id="links-social" class="links-list">-</div>
+                                </div>
+                                <div class="links-section">
+                                    <h4>Source Code</h4>
+                                    <div id="links-source" class="links-list">-</div>
+                                </div>
+                                <div class="links-section">
+                                    <h4>Community</h4>
+                                    <div id="links-community" class="links-list">-</div>
+                                </div>
+                                <div class="links-section">
+                                    <h4>Chat</h4>
+                                    <div id="links-chat" class="links-list">-</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <p class="footer-text">
+                    &copy; 2025 Folyo. Data provided by CoinMarketCap.
+                </p>
+                <p class="footer-update">
+                    Last updated: <span id="last-update">-</span>
+                </p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="js/config.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/utils.js"></script>
+    <script src="js/theme.js"></script>
+    <script src="js/currency.js"></script>
+    <script src="js/chart.js"></script>
+    <script src="js/currency-detail.js"></script>
+</body>
+</html>
