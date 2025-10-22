@@ -1,0 +1,231 @@
+/**
+ * Folyo - Responsive Styles
+ */
+
+/* Tablet (768px - 1024px) */
+@media (max-width: 1024px) {
+    .container {
+        padding: 0 16px;
+    }
+
+    .header-top {
+        flex-wrap: wrap;
+    }
+
+    .global-stats {
+        gap: 16px;
+        font-size: 12px;
+    }
+
+    /* Hide some columns on tablet */
+    .crypto-table th:nth-child(4), /* 1h% */
+    .crypto-table td:nth-child(4),
+    .crypto-table th:nth-child(9), /* Circulating Supply */
+    .crypto-table td:nth-child(9),
+    .crypto-table th:nth-child(10), /* Sparkline */
+    .crypto-table td:nth-child(10) {
+        display: none;
+    }
+}
+
+/* Mobile (< 768px) */
+@media (max-width: 768px) {
+    /* Header */
+    .header-top {
+        gap: 12px;
+    }
+
+    .logo h1 {
+        font-size: 20px;
+    }
+
+    .nav {
+        display: none; /* Show hamburger menu instead */
+    }
+
+    .header-actions {
+        gap: 8px;
+    }
+
+    .currency-select {
+        font-size: 12px;
+        padding: 6px 10px;
+    }
+
+    /* Global Stats - Scrollable */
+    .global-stats {
+        overflow-x: auto;
+        gap: 12px;
+        padding: 12px 0;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .stats-item {
+        flex-shrink: 0;
+        font-size: 11px;
+    }
+
+    /* Controls */
+    .controls {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .search-box {
+        max-width: none;
+    }
+
+    .update-indicator {
+        text-align: center;
+    }
+
+    /* Table - Convert to Cards */
+    .table-container {
+        border: none;
+        background: transparent;
+    }
+
+    .crypto-table {
+        display: none; /* Hide table on mobile */
+    }
+
+    /* Mobile Cards */
+    .crypto-cards {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .crypto-card {
+        background-color: var(--bg-secondary);
+        border: 1px solid var(--border-color);
+        border-radius: 12px;
+        padding: 16px;
+    }
+
+    .crypto-card-header {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 12px;
+    }
+
+    .crypto-card-rank {
+        font-weight: 600;
+        color: var(--text-secondary);
+        font-size: 14px;
+    }
+
+    .crypto-card-name {
+        flex: 1;
+    }
+
+    .crypto-card-name-text {
+        font-weight: 600;
+        font-size: 16px;
+        color: var(--text-primary);
+    }
+
+    .crypto-card-symbol {
+        font-size: 12px;
+        color: var(--text-secondary);
+        text-transform: uppercase;
+    }
+
+    .crypto-card-logo {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+    }
+
+    .crypto-card-body {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+    }
+
+    .crypto-card-item {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+
+    .crypto-card-label {
+        font-size: 11px;
+        color: var(--text-secondary);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .crypto-card-value {
+        font-weight: 600;
+        font-size: 14px;
+        color: var(--text-primary);
+    }
+
+    /* Pagination */
+    .pagination {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 12px;
+    }
+
+    .pagination-info {
+        text-align: center;
+    }
+
+    .pagination-controls {
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+
+    .page-numbers {
+        order: -1;
+        margin-bottom: 8px;
+    }
+
+    .btn-page {
+        padding: 10px 20px;
+        font-size: 13px;
+    }
+}
+
+/* Very Small Mobile (< 480px) */
+@media (max-width: 480px) {
+    .container {
+        padding: 0 12px;
+    }
+
+    .global-stats {
+        padding: 8px 0;
+    }
+
+    .crypto-card {
+        padding: 12px;
+    }
+
+    .crypto-card-body {
+        grid-template-columns: 1fr;
+    }
+
+    .page-numbers .page-number {
+        min-width: 32px;
+        height: 32px;
+        font-size: 13px;
+    }
+}
+
+/* Print Styles */
+@media print {
+    .header,
+    .controls,
+    .pagination,
+    .footer {
+        display: none;
+    }
+
+    .crypto-table th:nth-child(10),
+    .crypto-table td:nth-child(10) {
+        display: none;
+    }
+}

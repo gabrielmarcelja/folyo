@@ -1,0 +1,57 @@
+/**
+ * Folyo - Theme Variables
+ * Light and Dark theme color schemes
+ */
+
+/* Light Theme (Default) */
+.theme-light {
+    --bg-primary: #FFFFFF;
+    --bg-secondary: #F7F7F7;
+    --bg-tertiary: #EFF2F5;
+    --bg-hover: #F5F5F5;
+
+    --text-primary: #000000;
+    --text-secondary: #58667E;
+    --text-tertiary: #808A9D;
+
+    --border-color: #EFF2F5;
+    --border-hover: #E5E5E5;
+
+    --green: #16C784;
+    --red: #EA3943;
+    --blue: #3861FB;
+
+    --shadow: rgba(0, 0, 0, 0.05);
+    --shadow-hover: rgba(0, 0, 0, 0.1);
+}
+
+/* Dark Theme */
+.theme-dark {
+    --bg-primary: #0B0E11;
+    --bg-secondary: #17181B;
+    --bg-tertiary: #2B2F36;
+    --bg-hover: #1E2026;
+
+    --text-primary: #FFFFFF;
+    --text-secondary: #A0A0A0;
+    --text-tertiary: #808A9D;
+
+    --border-color: #2B2F36;
+    --border-hover: #3E4450;
+
+    --green: #16C784;
+    --red: #EA3943;
+    --blue: #3861FB;
+
+    --shadow: rgba(0, 0, 0, 0.2);
+    --shadow-hover: rgba(0, 0, 0, 0.3);
+}
+
+/* Common Colors (Independent of theme) */
+:root {
+    --green: #16C784;
+    --red: #EA3943;
+    --blue: #3861FB;
+    --yellow: #FFB800;
+    --orange: #FF9500;
+}
