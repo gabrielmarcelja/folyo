@@ -63,7 +63,7 @@ const CONFIG = {
         75: { label: 'Extreme Greed', class: 'extreme-greed', color: '#16C784' }
     },
 
-    // CoinMarketCap logo URL template
+    // Cryptocurrency logo URL template
     LOGO_URL_TEMPLATE: 'https://s2.coinmarketcap.com/static/img/coins/64x64/{id}.png',
 
     // LocalStorage keys

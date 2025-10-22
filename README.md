@@ -10,7 +10,7 @@ desenvolvido com HTML, CSS, JavaScript e PHP. Exibe preços, market cap, volume 
 - **Top 100 Criptomoedas** por market cap (expansível com paginação)
 - **Tabela Completa** com 10 colunas de dados detalhados
 - **Stats Globais** no header (Total Market Cap, Volume 24h, Dominance)
-- **Fear & Greed Index** oficial da CoinMarketCap
+- **Fear & Greed Index** do mercado cripto
 - **93+ Moedas Suportadas** (USD, EUR, BRL, GBP, JPY, etc.)
 - **Auto-Refresh** a cada 60 segundos
 - **Tema Claro/Escuro** com persistência
@@ -37,7 +37,7 @@ desenvolvido com HTML, CSS, JavaScript e PHP. Exibe preços, market cap, volume 
 
 ### Backend
 - PHP 7+
-- CoinMarketCap API v1/v2/v3
+- Cryptocurrency Data API (v1/v2/v3)
 
 ### Armazenamento
 - LocalStorage (tema, moeda, última atualização)
@@ -50,7 +50,7 @@ folyo/
 ├── .env                      # API key (não commitar!)
 ├── .gitignore
 ├── api/
-│   └── proxy.php            # Proxy PHP para CMC API
+│   └── proxy.php            # Proxy PHP para API de criptomoedas
 ├── css/
 │   ├── style.css            # Estilos principais
 │   ├── themes.css           # Variáveis de tema
@@ -95,10 +95,9 @@ folyo/
 ### Dados não aparecem
 1. Abra o Console do navegador (F12)
 2. Verifique erros JavaScript
-3. Teste a API manualmente com `curl`:
+3. Teste o proxy diretamente no navegador ou com `curl`:
 ```bash
-curl -H "X-CMC_PRO_API_KEY: sua_key" \
-     https://pro-api.coinmarketcap.com/v1/global-metrics/quotes/latest
+curl http://localhost/folyo/api/proxy.php?endpoint=global-metrics
 ```
 
 ## 🤝 Contribuindo

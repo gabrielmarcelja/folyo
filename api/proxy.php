@@ -1,7 +1,7 @@
 <?php
 /**
- * Folyo - CoinMarketCap API Proxy
- * Resolve CORS issues by proxying requests to CMC API
+ * Folyo - Cryptocurrency API Proxy
+ * Resolves CORS issues by proxying requests to the crypto data API
  */
 
 header('Content-Type: application/json');
