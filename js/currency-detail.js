@@ -306,8 +306,10 @@ const CurrencyDetail = {
         document.getElementById('crypto-rank').textContent = `Rank #${this.cryptoQuotes.cmc_rank}`;
 
         // Price
+        document.getElementById('crypto-price').textContent = Utils.formatPrice(quote.price, currency);
+
+        // Currency symbol for stats
         const currencySymbol = CONFIG.CURRENCY_SYMBOLS[currency] || '$';
-        document.getElementById('crypto-price').textContent = currencySymbol + Utils.formatNumber(quote.price, 2);
 
         // Price changes
         this.renderPriceChange('change-1h', quote.percent_change_1h, '1h');
