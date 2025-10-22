@@ -125,8 +125,8 @@ const UI = {
             const ids = pageData.map(crypto => crypto.id).join(',');
             const currency = CurrencyManager.getCurrency();
 
-            // Fetch OHLCV historical data (7 days of daily data)
-            const response = await API.getOHLCVHistorical(ids, 8, currency, 'daily', 'daily');
+            // Fetch OHLCV historical data (7 days with 2-hour intervals for more precision)
+            const response = await API.getOHLCVHistorical(ids, 85, currency, '2h', 'hourly');
 
             if (response && response.data) {
                 // Store sparkline data indexed by crypto ID
