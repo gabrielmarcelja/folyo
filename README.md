@@ -2,7 +2,7 @@
 
 desenvolvido com HTML, CSS e JavaScript vanilla puro. Exibe preços, market cap, volume e outras métricas de criptomoedas em tempo real.
 
-![Folyo Preview](https://via.placeholder.com/800x400?text=Folyo+Preview)
+![Folyo Preview](homepreview.png)
 
 ## ✨ Funcionalidades
 
