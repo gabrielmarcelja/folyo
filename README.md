@@ -1,6 +1,6 @@
 # Folyo - Cryptocurrency Market Tracker
 
-Folyo é um clone da homepage do CoinMarketCap, desenvolvido com HTML, CSS e JavaScript vanilla puro. Exibe preços, market cap, volume e outras métricas de criptomoedas em tempo real usando a API oficial da CoinMarketCap.
+desenvolvido com HTML, CSS e JavaScript vanilla puro. Exibe preços, market cap, volume e outras métricas de criptomoedas em tempo real.
 
 ![Folyo Preview](https://via.placeholder.com/800x400?text=Folyo+Preview)
 
@@ -36,7 +36,7 @@ Folyo é um clone da homepage do CoinMarketCap, desenvolvido com HTML, CSS e Jav
 - Google Fonts (Inter)
 
 ### Backend
-- PHP 7+ (proxy para resolver CORS)
+- PHP 7+
 - CoinMarketCap API v1/v2/v3
 
 ### Armazenamento
@@ -67,134 +67,12 @@ folyo/
     └── logo.svg             # Logo do projeto
 ```
 
-## 🚀 Instalação
-
-### Pré-requisitos
-- Servidor web (Apache, Nginx) com PHP 7+
-- API Key da CoinMarketCap (gratuita em [pro.coinmarketcap.com](https://pro.coinmarketcap.com))
-
-### Passo a Passo
-
-1. **Clone o repositório**
-```bash
-git clone https://github.com/seu-usuario/folyo.git
-cd folyo
-```
-
-2. **Configure a API Key**
-
-Crie um arquivo `.env` na raiz do projeto:
-```
-CMC_API_KEY=sua_api_key_aqui
-```
-
-Ou edite o arquivo existente `.env` e substitua pela sua key.
-
-3. **Configure o servidor**
-
-**Apache (httpd.conf ou .htaccess)**
-```apache
-<Directory "/var/www/html/folyo">
-    Options Indexes FollowSymLinks
-    AllowOverride All
-    Require all granted
-</Directory>
-```
-
-**Nginx (nginx.conf)**
-```nginx
-location /folyo {
-    try_files $uri $uri/ /folyo/index.html;
-}
-```
-
-4. **Acesse a aplicação**
-
-Abra seu navegador em:
-```
-http://localhost/folyo
-```
-
-## 🔧 Configuração
-
-### Alterar Intervalo de Refresh
-
-Edite `js/config.js`:
-```javascript
-REFRESH_INTERVAL: 60000, // 60 segundos (em milissegundos)
-```
-
-### Alterar Quantidade de Itens por Página
-
-Edite `js/config.js`:
-```javascript
-ITEMS_PER_PAGE: 100, // Quantidade por página
-```
-
-### Adicionar Mais Moedas
-
-Edite `js/config.js` e adicione ao objeto `CURRENCY_SYMBOLS`:
-```javascript
-CURRENCY_SYMBOLS: {
-    'USD': '$',
-    'EUR': '€',
-    'SEU_CODIGO': 'Símbolo',
-    // ...
-}
-```
-
-E adicione no HTML `index.html` no select:
-```html
-<option value="SEU_CODIGO" data-symbol="Símbolo">SEU_CODIGO 🏳️</option>
-```
-
-## 📊 Endpoints da API Usados
-
-### CoinMarketCap API
-
-**Base URL:** `https://pro-api.coinmarketcap.com`
-
-1. **`/v1/cryptocurrency/listings/latest`**
-   - Lista top criptomoedas
-   - Params: `start`, `limit`, `convert`
-   - Update: 60s
-
-2. **`/v1/global-metrics/quotes/latest`**
-   - Métricas globais de mercado
-   - Params: `convert`
-   - Update: 5min
-
-3. **`/v3/fear-and-greed/latest`**
-   - Índice Fear & Greed
-   - Update: 15min
-
-## 🎨 Temas
-
-### Tema Claro (Padrão)
-```css
---bg-primary: #FFFFFF
---bg-secondary: #F7F7F7
---text-primary: #000000
---green: #16C784
---red: #EA3943
-```
-
-### Tema Escuro
-```css
---bg-primary: #0B0E11
---bg-secondary: #17181B
---text-primary: #FFFFFF
---green: #16C784 (mesmo)
---red: #EA3943 (mesmo)
-```
-
 ## 🔒 Segurança
 
 - ✅ API key armazenada server-side (PHP)
 - ✅ `.env` no `.gitignore`
 - ✅ Proxy PHP evita exposição da key
 - ✅ Headers CORS configurados
-- ⚠️ **IMPORTANTE**: Nunca commite o arquivo `.env`!
 
 ## 📈 Performance
 
@@ -237,20 +115,4 @@ Contribuições são bem-vindas! Por favor:
 
 Este projeto é para fins educacionais. Os dados são fornecidos pela [CoinMarketCap API](https://coinmarketcap.com/api/).
 
-**Atribuição Necessária:**
-> Data provided by CoinMarketCap.com
-
-## 🙏 Créditos
-
-- **Design Inspirado**: [CoinMarketCap](https://coinmarketcap.com)
-- **API**: [CoinMarketCap API](https://coinmarketcap.com/api/)
-- **Fear & Greed Index**: CoinMarketCap Official Index
-- **Fonte**: [Inter (Google Fonts)](https://fonts.google.com/specimen/Inter)
-
-## 📧 Contato
-
-Dúvidas ou sugestões? Entre em contato!
-
----
-
-**Desenvolvido com ❤️ usando HTML, CSS e JavaScript vanilla**
+**Desenvolvido com ❤️ usando HTML, CSS, JavaScript e PHP**
