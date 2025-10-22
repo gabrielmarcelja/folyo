@@ -1,6 +1,6 @@
 # Folyo - Cryptocurrency Market Tracker
 
-desenvolvido com HTML, CSS e JavaScript vanilla puro. Exibe preços, market cap, volume e outras métricas de criptomoedas em tempo real.
+desenvolvido com HTML, CSS, JavaScript e PHP. Exibe preços, market cap, volume e outras métricas de criptomoedas em tempo real.
 
 ![Folyo Preview](homepreview.png)
 
