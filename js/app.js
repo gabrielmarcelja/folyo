@@ -97,6 +97,9 @@ const App = {
             UI.renderTable();
             UI.renderPagination();
 
+            // Fetch sparkline data for current page
+            await UI.fetchSparklineData();
+
             // Update last update time
             UI.updateLastUpdateTime();
 

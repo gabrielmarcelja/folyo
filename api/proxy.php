@@ -67,6 +67,17 @@ switch ($endpoint) {
         $url = "$baseUrl/v2/cryptocurrency/info?id=$ids";
         break;
 
+    case 'ohlcv-historical':
+        if (empty($ids)) {
+            http_response_code(400);
+            echo json_encode(['error' => 'Missing ids parameter']);
+            exit;
+        }
+        $count = $_GET['count'] ?? '8';
+        $interval = $_GET['interval'] ?? 'daily';
+        $url = "$baseUrl/v2/cryptocurrency/ohlcv/historical?id=$ids&count=$count&interval=$interval&convert=$convert";
+        break;
+
     default:
         http_response_code(400);
         echo json_encode(['error' => 'Invalid endpoint']);

@@ -122,6 +122,35 @@ const API = {
     },
 
     /**
+     * Fetch historical OHLCV data for sparklines
+     * @param {string} ids - Comma-separated cryptocurrency IDs
+     * @param {number} count - Number of data points (default 8 for 7 days)
+     * @param {string} convert - Currency to convert to
+     * @returns {Promise}
+     */
+    async getOHLCVHistorical(ids, count = 8, convert = 'USD') {
+        try {
+            const url = `${CONFIG.API_BASE_URL}?endpoint=ohlcv-historical&ids=${ids}&count=${count}&interval=daily&convert=${convert}`;
+            const response = await fetch(url);
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            const data = await response.json();
+
+            if (data.status && data.status.error_code !== 0) {
+                throw new Error(data.status.error_message || 'API Error');
+            }
+
+            return data;
+        } catch (error) {
+            console.error('Error fetching OHLCV historical data:', error);
+            throw error;
+        }
+    },
+
+    /**
      * Fetch all data needed for the app
      * @param {number} start
      * @param {number} limit

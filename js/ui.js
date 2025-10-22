@@ -5,6 +5,7 @@
 const UI = {
     data: [],
     filteredData: [],
+    sparklineData: {}, // Store OHLCV historical data for sparklines
     currentPage: 1,
     sortField: null,
     sortDirection: 'asc',
@@ -23,12 +24,13 @@ const UI = {
     setupEventListeners() {
         // Search
         const searchInput = document.getElementById('search-input');
-        searchInput.addEventListener('input', Utils.debounce((e) => {
+        searchInput.addEventListener('input', Utils.debounce(async (e) => {
             this.searchTerm = e.target.value.toLowerCase();
             this.filterData();
             this.currentPage = 1;
             this.renderTable();
             this.renderPagination();
+            await this.fetchSparklineData();
         }, 300));
 
         // Table sorting
@@ -98,11 +100,59 @@ const UI = {
      * Set data and render
      * @param {array} cryptoData
      */
-    setData(cryptoData) {
+    async setData(cryptoData) {
         this.data = cryptoData;
         this.filterData();
         this.renderTable();
         this.renderPagination();
+
+        // Fetch sparkline data for current page
+        await this.fetchSparklineData();
+    },
+
+    /**
+     * Fetch sparkline data for visible cryptocurrencies
+     */
+    async fetchSparklineData() {
+        try {
+            // Get IDs of cryptocurrencies on current page
+            const startIndex = (this.currentPage - 1) * CONFIG.ITEMS_PER_PAGE;
+            const endIndex = startIndex + CONFIG.ITEMS_PER_PAGE;
+            const pageData = this.filteredData.slice(startIndex, endIndex);
+
+            if (pageData.length === 0) return;
+
+            const ids = pageData.map(crypto => crypto.id).join(',');
+            const currency = CurrencyManager.getCurrency();
+
+            // Fetch OHLCV historical data
+            const response = await API.getOHLCVHistorical(ids, 8, currency);
+
+            if (response && response.data) {
+                // Store sparkline data indexed by crypto ID
+                Object.keys(response.data).forEach(id => {
+                    const cryptoData = response.data[id];
+                    if (cryptoData && cryptoData.quotes && cryptoData.quotes.length > 0) {
+                        // Extract closing prices for sparkline
+                        const prices = cryptoData.quotes.map(quote => {
+                            const quoteData = quote.quote[currency] || quote.quote.USD;
+                            return quoteData ? quoteData.close : null;
+                        }).filter(price => price !== null && price !== undefined);
+
+                        // Only store if we have valid data
+                        if (prices.length > 0) {
+                            this.sparklineData[id] = prices;
+                        }
+                    }
+                });
+
+                // Re-render sparklines with real data only
+                this.renderAllSparklines(pageData);
+            }
+        } catch (error) {
+            console.error('Error fetching sparkline data:', error);
+            // Don't show sparklines if API fails - leave canvases empty
+        }
     },
 
     /**
@@ -124,7 +174,7 @@ const UI = {
      * Sort table by field
      * @param {string} field
      */
-    sortTable(field) {
+    async sortTable(field) {
         if (this.sortField === field) {
             // Toggle direction
             this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
@@ -135,6 +185,7 @@ const UI = {
 
         this.filteredData = Utils.sortBy(this.filteredData, field, this.sortDirection);
         this.renderTable();
+        await this.fetchSparklineData();
     },
 
     /**
@@ -219,8 +270,7 @@ const UI = {
             tbody.appendChild(row);
         });
 
-        // Render sparklines after DOM update
-        setTimeout(() => this.renderAllSparklines(pageData), 0);
+        // Sparklines will be rendered when real data is fetched via fetchSparklineData()
     },
 
     /**
@@ -314,27 +364,20 @@ const UI = {
      * @param {array} cryptos
      */
     renderAllSparklines(cryptos) {
-        // Generate mock sparkline data for now
         cryptos.forEach(crypto => {
             const canvas = document.querySelector(`canvas[data-crypto-id="${crypto.id}"]`);
             if (canvas) {
-                this.drawSparkline(canvas, this.generateMockSparklineData());
+                // Only use real data from API, don't show anything if not available
+                const data = this.sparklineData[crypto.id];
+                if (data && data.length > 0) {
+                    this.drawSparkline(canvas, data);
+                } else {
+                    // Clear canvas if no data available
+                    const ctx = canvas.getContext('2d');
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                }
             }
         });
-    },
-
-    /**
-     * Generate mock sparkline data (7 days)
-     * @returns {array}
-     */
-    generateMockSparklineData() {
-        const data = [];
-        let value = 100;
-        for (let i = 0; i < 7; i++) {
-            value += (Math.random() - 0.5) * 20;
-            data.push(value);
-        }
-        return data;
     },
 
     /**
@@ -343,32 +386,53 @@ const UI = {
      * @param {array} data
      */
     drawSparkline(canvas, data) {
+        if (!data || data.length < 2) return;
+
         const ctx = canvas.getContext('2d');
         const width = canvas.width = canvas.offsetWidth * 2; // Retina
         const height = canvas.height = canvas.offsetHeight * 2;
 
-        // Scale data to canvas
+        // Clear canvas
+        ctx.clearRect(0, 0, width, height);
+
+        // Scale data to canvas with padding
+        const padding = height * 0.1; // 10% padding top and bottom
         const min = Math.min(...data);
         const max = Math.max(...data);
         const range = max - min || 1;
 
         const points = data.map((value, index) => ({
             x: (index / (data.length - 1)) * width,
-            y: height - ((value - min) / range * height)
+            y: padding + ((max - value) / range * (height - 2 * padding))
         }));
 
         // Determine color (green if trending up, red if trending down)
         const color = data[data.length - 1] >= data[0] ? '#16C784' : '#EA3943';
 
-        // Draw line
+        // Draw smooth line using quadratic curves
         ctx.strokeStyle = color;
-        ctx.lineWidth = 2;
+        ctx.lineWidth = 3;
         ctx.lineJoin = 'round';
         ctx.lineCap = 'round';
 
         ctx.beginPath();
         ctx.moveTo(points[0].x, points[0].y);
-        points.forEach(point => ctx.lineTo(point.x, point.y));
+
+        // Draw smooth curve through points
+        for (let i = 0; i < points.length - 1; i++) {
+            const current = points[i];
+            const next = points[i + 1];
+
+            // Calculate control point for smooth curve
+            const controlX = (current.x + next.x) / 2;
+            const controlY = (current.y + next.y) / 2;
+
+            ctx.quadraticCurveTo(current.x, current.y, controlX, controlY);
+        }
+
+        // Draw to last point
+        const lastPoint = points[points.length - 1];
+        ctx.lineTo(lastPoint.x, lastPoint.y);
         ctx.stroke();
     },
 
@@ -461,11 +525,14 @@ const UI = {
      * Go to page
      * @param {number} page
      */
-    goToPage(page) {
+    async goToPage(page) {
         this.currentPage = page;
         this.renderTable();
         this.renderPagination();
         window.scrollTo({ top: 0, behavior: 'smooth' });
+
+        // Fetch sparkline data for new page
+        await this.fetchSparklineData();
     },
 
     /**
