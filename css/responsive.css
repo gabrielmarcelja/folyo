@@ -33,6 +33,7 @@
     /* Header */
     .header-top {
         gap: 12px;
+        flex-wrap: wrap;
     }
 
     .logo h1 {
@@ -45,11 +46,19 @@
 
     .header-actions {
         gap: 8px;
+        flex-wrap: wrap;
     }
 
     .currency-select {
         font-size: 12px;
         padding: 6px 10px;
+    }
+
+    /* Login and Signup buttons on mobile */
+    .btn-login,
+    .btn-signup {
+        padding: 6px 12px;
+        font-size: 13px;
     }
 
     /* Global Stats - Scrollable */

@@ -120,6 +120,40 @@ body {
     display: none;
 }
 
+/* Login and Signup Buttons */
+.btn-login,
+.btn-signup {
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+}
+
+.btn-login {
+    background-color: transparent;
+    border: 1px solid var(--border-color);
+    color: var(--text-primary);
+}
+
+.btn-login:hover {
+    background-color: var(--bg-hover);
+    border-color: var(--border-hover);
+}
+
+.btn-signup {
+    background-color: var(--blue);
+    border: 1px solid var(--blue);
+    color: #FFFFFF;
+}
+
+.btn-signup:hover {
+    opacity: 0.9;
+    transform: translateY(-1px);
+}
+
 /* Global Stats */
 .global-stats {
     display: flex;
