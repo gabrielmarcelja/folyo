@@ -250,6 +250,7 @@
                 <button class="modal-close" aria-label="Close modal">&times;</button>
             </div>
             <form id="login-form" class="auth-form">
+                <div id="login-error" class="error-message" style="display: none;"></div>
                 <div class="form-group">
                     <label for="login-email">Email</label>
                     <input type="email" id="login-email" name="email" required placeholder="Enter your email">
@@ -260,7 +261,7 @@
                 </div>
                 <button type="submit" class="btn-submit">Login</button>
                 <p class="auth-switch">
-                    Don't have an account? <a href="#" id="switch-to-signup">Sign up</a>
+                    Don't have an account? <a href="#" id="show-signup">Sign up</a>
                 </p>
             </form>
         </div>
@@ -274,21 +275,22 @@
                 <button class="modal-close" aria-label="Close modal">&times;</button>
             </div>
             <form id="signup-form" class="auth-form">
+                <div id="signup-error" class="error-message" style="display: none;"></div>
                 <div class="form-group">
                     <label for="signup-email">Email</label>
                     <input type="email" id="signup-email" name="email" required placeholder="Enter your email">
                 </div>
                 <div class="form-group">
                     <label for="signup-password">Password</label>
-                    <input type="password" id="signup-password" name="password" required placeholder="Create a password">
+                    <input type="password" id="signup-password" name="password" required minlength="6" placeholder="Create a password (min 6 characters)">
                 </div>
                 <div class="form-group">
-                    <label for="signup-password-confirm">Confirm Password</label>
-                    <input type="password" id="signup-password-confirm" name="password-confirm" required placeholder="Confirm your password">
+                    <label for="signup-confirm-password">Confirm Password</label>
+                    <input type="password" id="signup-confirm-password" name="password-confirm" required placeholder="Confirm your password">
                 </div>
                 <button type="submit" class="btn-submit">Sign Up</button>
                 <p class="auth-switch">
-                    Already have an account? <a href="#" id="switch-to-login">Login</a>
+                    Already have an account? <a href="#" id="show-login">Login</a>
                 </p>
             </form>
         </div>
@@ -300,6 +302,8 @@
     <script src="js/api.js"></script>
     <script src="js/currency.js"></script>
     <script src="js/theme.js"></script>
+    <script src="js/api-client.js"></script>
+    <script src="js/auth-manager.js"></script>
     <script src="js/auth.js"></script>
     <script src="js/ui.js"></script>
     <script src="js/app.js"></script>

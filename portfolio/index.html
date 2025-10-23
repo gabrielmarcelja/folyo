@@ -16,6 +16,7 @@
     <link rel="stylesheet" href="../css/themes.css">
     <link rel="stylesheet" href="../css/style.css">
     <link rel="stylesheet" href="../css/portfolio.css">
+    <link rel="stylesheet" href="../css/modal.css">
     <link rel="stylesheet" href="../css/responsive.css">
 </head>
 <body class="theme-light">
@@ -149,83 +150,17 @@
                     <span class="sidebar-icon">📊</span>
                     <div class="sidebar-text">
                         <span class="sidebar-label">Overview</span>
-                        <span class="sidebar-value">$6,264.03</span>
+                        <span class="sidebar-value">$0.00</span>
                     </div>
                 </button>
 
                 <!-- My Portfolios Section -->
                 <div class="sidebar-section">
                     <div class="sidebar-section-header">
-                        <h3>My portfolios (7)</h3>
-                        <button class="btn-icon" aria-label="Edit portfolios">✏️</button>
+                        <h3>My portfolios (0)</h3>
                     </div>
                     <div class="wallets-list">
-                        <button class="wallet-item" data-wallet="hold-wallet">
-                            <span class="wallet-icon">💰</span>
-                            <div class="wallet-info">
-                                <div class="wallet-name">hold wallet</div>
-                                <div class="wallet-value">$3,430.08</div>
-                            </div>
-                        </button>
-                        <button class="wallet-item" data-wallet="work-wallet">
-                            <span class="wallet-icon">💼</span>
-                            <div class="wallet-info">
-                                <div class="wallet-name">work wallet</div>
-                                <div class="wallet-value">$663.71</div>
-                            </div>
-                        </button>
-                        <button class="wallet-item" data-wallet="phantom">
-                            <span class="wallet-icon">👻</span>
-                            <div class="wallet-info">
-                                <div class="wallet-name">phantom</div>
-                                <div class="wallet-value">$602.44</div>
-                            </div>
-                        </button>
-                        <button class="wallet-item" data-wallet="kraken">
-                            <span class="wallet-icon">🦑</span>
-                            <div class="wallet-info">
-                                <div class="wallet-name">kraken</div>
-                                <div class="wallet-value">$286.42</div>
-                            </div>
-                        </button>
-                        <button class="wallet-item" data-wallet="gate-com">
-                            <span class="wallet-icon">🚪</span>
-                            <div class="wallet-info">
-                                <div class="wallet-name">gate.com</div>
-                                <div class="wallet-value">$45.91</div>
-                            </div>
-                        </button>
-                        <button class="wallet-item" data-wallet="bybit">
-                            <span class="wallet-icon">📈</span>
-                            <div class="wallet-info">
-                                <div class="wallet-name">bybit</div>
-                                <div class="wallet-value">$83.34</div>
-                            </div>
-                        </button>
-                        <button class="wallet-item" data-wallet="binance">
-                            <span class="wallet-icon">🔶</span>
-                            <div class="wallet-info">
-                                <div class="wallet-name">binance</div>
-                                <div class="wallet-value">$1,169.98</div>
-                            </div>
-                        </button>
-                    </div>
-                </div>
-
-                <!-- Others Portfolio Section -->
-                <div class="sidebar-section">
-                    <div class="sidebar-section-header">
-                        <h3>Others portfolio</h3>
-                        <button class="btn-icon" aria-label="Edit portfolios">✏️</button>
-                    </div>
-                    <div class="wallets-list">
-                        <button class="wallet-item" data-wallet="futures-binance">
-                            <span class="wallet-icon">🔮</span>
-                            <div class="wallet-info">
-                                <div class="wallet-name">FUTURES_BINANCE</div>
-                                <div class="wallet-value negative">-$0.4058</div>
-                            </div>
-                        </button>
+                        <!-- Portfolios will be loaded dynamically via JavaScript -->
                     </div>
                 </div>
 
@@ -250,8 +185,8 @@
                 <div class="portfolio-header">
                     <div class="portfolio-title-section">
                         <span class="portfolio-label">Total value</span>
-                        <h1 class="portfolio-total-value">$6,264.03</h1>
-                        <span class="portfolio-change negative">-$142.80 <span class="arrow">▼</span>2.23% (24h)</span>
+                        <h1 class="portfolio-total-value">$0.00</h1>
+                        <span class="portfolio-change">$0.00 <span class="arrow">—</span>0.00% (24h)</span>
                     </div>
                     <div class="portfolio-actions">
                         <label class="toggle-switch">
@@ -276,7 +211,7 @@
                         <div class="allocation-chart-wrapper">
                             <canvas id="allocation-chart-overview" width="300" height="300"></canvas>
                             <div class="chart-center-text">
-                                <span class="chart-center-value" id="chart-center-overview">8</span>
+                                <span class="chart-center-value" id="chart-center-overview">0</span>
                                 <span class="chart-center-label">Assets</span>
                             </div>
                         </div>
@@ -321,9 +256,9 @@
                 <!-- Wallet Header -->
                 <div class="wallet-header">
                     <div class="wallet-title-section">
-                        <h1 class="wallet-name" id="wallet-name">hold wallet</h1>
-                        <div class="wallet-total-value" id="wallet-total-value">$3,430.08</div>
-                        <span class="wallet-change negative" id="wallet-change">-$76.58 <span class="arrow">▼</span>2.18% (24h)</span>
+                        <h1 class="wallet-name" id="wallet-name">Portfolio</h1>
+                        <div class="wallet-total-value" id="wallet-total-value">$0.00</div>
+                        <span class="wallet-change" id="wallet-change">$0.00 <span class="arrow">—</span>0.00% (24h)</span>
                     </div>
                     <div class="wallet-actions">
                         <label class="toggle-switch">
@@ -331,8 +266,8 @@
                             <span class="toggle-slider"></span>
                             <span class="toggle-label">Show charts</span>
                         </label>
-                        <button class="btn-primary">+ Add Transaction</button>
-                        <button class="btn-secondary">⬇ Export</button>
+                        <button class="btn-primary" id="add-transaction-btn" aria-label="Add new transaction">+ Add Transaction</button>
+                        <button class="btn-secondary" id="export-wallet-btn" aria-label="Export transactions to CSV">⬇ Export</button>
                     </div>
                 </div>
 
@@ -340,24 +275,24 @@
                 <div class="stats-grid">
                     <div class="stat-card">
                         <span class="stat-label">All-time profit</span>
-                        <span class="stat-value positive" id="stat-profit">+$3,430.08</span>
+                        <span class="stat-value" id="stat-profit">$0.00</span>
                     </div>
                     <div class="stat-card">
                         <span class="stat-label">Cost Basis</span>
-                        <span class="stat-value" id="stat-cost-basis">$0</span>
+                        <span class="stat-value" id="stat-cost-basis">$0.00</span>
                     </div>
                     <div class="stat-card">
                         <span class="stat-label">Best Performer</span>
                         <div class="performer" id="stat-best-performer">
-                            <div class="performer-token">🟣 AAVE</div>
-                            <div class="performer-value positive">+$1,268.37<br><span class="performer-percent">~%</span></div>
+                            <div class="performer-token">—</div>
+                            <div class="performer-value">$0.00<br><span class="performer-percent">0.00%</span></div>
                         </div>
                     </div>
                     <div class="stat-card">
                         <span class="stat-label">Worst Performer</span>
                         <div class="performer" id="stat-worst-performer">
-                            <div class="performer-token">🟣 POL</div>
-                            <div class="performer-value positive">+$3,313.9<br><span class="performer-percent">~%</span></div>
+                            <div class="performer-token">—</div>
+                            <div class="performer-value">$0.00<br><span class="performer-percent">0.00%</span></div>
                         </div>
                     </div>
                 </div>
@@ -371,7 +306,7 @@
                         <div class="allocation-chart-wrapper">
                             <canvas id="allocation-chart-wallet" width="300" height="300"></canvas>
                             <div class="chart-center-text">
-                                <span class="chart-center-value" id="chart-center-wallet">7</span>
+                                <span class="chart-center-value" id="chart-center-wallet">0</span>
                                 <span class="chart-center-label">Assets</span>
                             </div>
                         </div>
@@ -410,6 +345,58 @@
                         <!-- Rendered by JS for mobile -->
                     </div>
                 </div>
+
+                <!-- Transactions Section -->
+                <div class="transactions-section">
+                    <div class="transactions-header">
+                        <h2>Transaction History</h2>
+                        <div class="transactions-actions">
+                            <button class="btn-secondary btn-sm" id="export-transactions">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                    <polyline points="7 10 12 15 17 10"></polyline>
+                                    <line x1="12" y1="15" x2="12" y2="3"></line>
+                                </svg>
+                                Export CSV
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="table-wrapper">
+                        <table class="transactions-table">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Type</th>
+                                    <th>Asset</th>
+                                    <th>Quantity</th>
+                                    <th>Price</th>
+                                    <th>Fee</th>
+                                    <th>Total</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="transactions-table-body">
+                                <!-- Rendered by JS -->
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Mobile Cards -->
+                    <div class="transactions-cards" id="transactions-cards">
+                        <!-- Rendered by JS for mobile -->
+                    </div>
+
+                    <!-- Empty State -->
+                    <div class="transactions-empty" id="transactions-empty" style="display: none;">
+                        <div class="empty-icon">📝</div>
+                        <h3>No Transactions Yet</h3>
+                        <p>Add your first transaction to start tracking your portfolio performance</p>
+                        <button class="btn-primary" onclick="TransactionManager.showModal(PortfolioManager.currentPortfolio)">
+                            + Add Transaction
+                        </button>
+                    </div>
+                </div>
             </div>
         </main>
     </div>
@@ -417,11 +404,240 @@
     <!-- Portfolio Sidebar Backdrop -->
     <div class="portfolio-sidebar-backdrop" id="portfolio-sidebar-backdrop"></div>
 
+    <!-- Add Transaction Modal -->
+    <div id="transaction-modal" class="modal">
+        <div class="modal-content modal-large">
+            <div class="modal-header">
+                <h2>Add Transaction</h2>
+                <button class="modal-close" aria-label="Close modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div id="transaction-error" class="error-message" style="display: none;"></div>
+
+                <!-- Transaction Type Tabs -->
+                <div class="transaction-tabs">
+                    <button class="transaction-tab active" data-type="buy">Buy</button>
+                    <button class="transaction-tab" data-type="sell">Sell</button>
+                </div>
+
+                <form id="transaction-form" class="transaction-form">
+                    <input type="hidden" id="transaction-portfolio-id" name="portfolio_id">
+                    <input type="hidden" id="transaction-type" name="transaction_type" value="buy">
+                    <input type="hidden" id="transaction-crypto-id" name="crypto_id">
+
+                    <!-- Crypto Search -->
+                    <div class="form-group">
+                        <label for="crypto-search">Select Cryptocurrency *</label>
+                        <div class="crypto-search-wrapper">
+                            <input
+                                type="text"
+                                id="crypto-search"
+                                class="form-control"
+                                placeholder="Search for a cryptocurrency..."
+                                autocomplete="off"
+                            >
+                            <div class="crypto-search-results" id="crypto-search-results"></div>
+                        </div>
+                        <div class="selected-crypto" id="selected-crypto" style="display: none;">
+                            <img src="" alt="" class="selected-crypto-logo">
+                            <div class="selected-crypto-info">
+                                <span class="selected-crypto-name"></span>
+                                <span class="selected-crypto-symbol"></span>
+                            </div>
+                            <button type="button" class="btn-remove-crypto">&times;</button>
+                        </div>
+                    </div>
+
+                    <!-- Quantity -->
+                    <div class="form-group">
+                        <label for="transaction-quantity">Quantity *</label>
+                        <input
+                            type="number"
+                            id="transaction-quantity"
+                            name="quantity"
+                            class="form-control"
+                            step="0.00000001"
+                            min="0.00000001"
+                            placeholder="0.00000000"
+                            required
+                        >
+                    </div>
+
+                    <!-- Price Per Coin -->
+                    <div class="form-group">
+                        <label for="transaction-price">Price Per Coin (USD) *</label>
+                        <input
+                            type="number"
+                            id="transaction-price"
+                            name="price_per_coin"
+                            class="form-control"
+                            step="0.00000001"
+                            min="0.00000001"
+                            placeholder="0.00"
+                            required
+                        >
+                        <small class="form-helper" id="price-helper"></small>
+                    </div>
+
+                    <!-- Transaction Date -->
+                    <div class="form-group">
+                        <label for="transaction-date">Date & Time *</label>
+                        <input
+                            type="datetime-local"
+                            id="transaction-date"
+                            name="transaction_date"
+                            class="form-control"
+                            required
+                        >
+                        <small class="form-helper" id="date-helper"></small>
+                    </div>
+
+                    <!-- Fee (Optional) -->
+                    <div class="form-group">
+                        <label for="transaction-fee">Fee (USD)</label>
+                        <input
+                            type="number"
+                            id="transaction-fee"
+                            name="fee"
+                            class="form-control"
+                            step="0.01"
+                            min="0"
+                            placeholder="0.00"
+                            value="0"
+                        >
+                    </div>
+
+                    <!-- Total Amount (Calculated) -->
+                    <div class="form-group">
+                        <label for="transaction-total">Total Amount (USD)</label>
+                        <input
+                            type="number"
+                            id="transaction-total"
+                            name="total_amount"
+                            class="form-control"
+                            step="0.01"
+                            readonly
+                        >
+                        <small class="form-helper">Automatically calculated: (Quantity × Price) + Fee</small>
+                    </div>
+
+                    <!-- Notes (Optional) -->
+                    <div class="form-group">
+                        <label for="transaction-notes">Notes</label>
+                        <textarea
+                            id="transaction-notes"
+                            name="notes"
+                            class="form-control"
+                            rows="3"
+                            placeholder="Optional notes about this transaction..."
+                        ></textarea>
+                    </div>
+
+                    <!-- Form Actions -->
+                    <div class="modal-actions">
+                        <button type="button" class="btn-secondary" id="cancel-transaction">Cancel</button>
+                        <button type="submit" class="btn-primary" id="submit-transaction">
+                            <span class="btn-text">Add Transaction</span>
+                            <span class="btn-loading" style="display: none;">
+                                <span class="spinner"></span> Processing...
+                            </span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Create Portfolio Modal -->
+    <div id="create-portfolio-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Create Portfolio</h2>
+                <button class="modal-close" aria-label="Close modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div id="create-portfolio-error" class="error-message" style="display: none;"></div>
+
+                <form id="create-portfolio-form" class="auth-form">
+                    <div class="form-group">
+                        <label for="portfolio-name">Portfolio Name *</label>
+                        <input
+                            type="text"
+                            id="portfolio-name"
+                            name="name"
+                            class="form-control"
+                            placeholder="e.g., My Main Wallet"
+                            required
+                            maxlength="100"
+                        >
+                    </div>
+
+                    <div class="modal-actions">
+                        <button type="button" class="btn-secondary" id="cancel-create-portfolio">Cancel</button>
+                        <button type="submit" class="btn-primary">Create Portfolio</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Portfolio Modal -->
+    <div id="edit-portfolio-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Edit Portfolio</h2>
+                <button class="modal-close" aria-label="Close modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div id="edit-portfolio-error" class="error-message" style="display: none;"></div>
+
+                <form id="edit-portfolio-form" class="auth-form">
+                    <input type="hidden" id="edit-portfolio-id">
+
+                    <div class="form-group">
+                        <label for="edit-portfolio-name">Portfolio Name *</label>
+                        <input
+                            type="text"
+                            id="edit-portfolio-name"
+                            name="name"
+                            class="form-control"
+                            required
+                            maxlength="100"
+                        >
+                    </div>
+
+                    <div class="form-group">
+                        <label for="edit-portfolio-description">Description</label>
+                        <textarea
+                            id="edit-portfolio-description"
+                            name="description"
+                            class="form-control"
+                            rows="3"
+                            maxlength="500"
+                        ></textarea>
+                    </div>
+
+                    <div class="modal-actions">
+                        <button type="button" class="btn-danger" id="delete-portfolio-btn">Delete Portfolio</button>
+                        <div style="flex: 1;"></div>
+                        <button type="button" class="btn-secondary" id="cancel-edit-portfolio">Cancel</button>
+                        <button type="submit" class="btn-primary">Save Changes</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
     <!-- JavaScript -->
     <script src="../js/config.js"></script>
     <script src="../js/theme.js"></script>
     <script src="../js/currency.js"></script>
     <script src="../js/ui.js"></script>
+    <script src="../js/api-client.js"></script>
+    <script src="../js/auth-manager.js"></script>
+    <script src="../js/auth.js"></script>
+    <script src="../js/portfolio-manager.js"></script>
+    <script src="../js/transaction-manager.js"></script>
     <script src="../js/portfolio.js"></script>
 </body>
 </html>
