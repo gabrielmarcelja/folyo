@@ -241,6 +241,262 @@
     }
 }
 
+/* ==========================================
+   PORTFOLIO PAGE RESPONSIVE STYLES
+   ========================================== */
+
+/* Tablet - Portfolio (768px - 1024px) */
+@media (max-width: 1024px) {
+    .portfolio-sidebar {
+        width: 220px;
+    }
+
+    .portfolio-content {
+        padding: 24px 16px;
+    }
+
+    .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .allocation-content {
+        flex-direction: column;
+        gap: 24px;
+    }
+
+    .allocation-legend {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    /* Table horizontal scroll */
+    .table-wrapper {
+        overflow-x: auto;
+    }
+
+    .holdings-table,
+    .assets-table {
+        min-width: 900px;
+    }
+}
+
+/* Mobile - Portfolio (max-width: 768px) */
+@media (max-width: 768px) {
+    .portfolio-container {
+        flex-direction: column;
+    }
+
+    /* Sidebar becomes drawer */
+    .portfolio-sidebar {
+        position: fixed;
+        top: 80px;
+        left: -100%;
+        width: 280px;
+        height: calc(100vh - 80px);
+        z-index: 1000;
+        transition: left 0.3s ease;
+        box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .portfolio-sidebar.open {
+        left: 0;
+    }
+
+    /* Sidebar toggle button */
+    .sidebar-toggle {
+        display: block;
+        position: fixed;
+        top: 90px;
+        left: 16px;
+        z-index: 1001;
+        width: 44px;
+        height: 44px;
+        background-color: var(--bg-primary);
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .hamburger {
+        width: 20px;
+        height: 2px;
+        background-color: var(--text-primary);
+        position: relative;
+    }
+
+    .hamburger::before,
+    .hamburger::after {
+        content: '';
+        position: absolute;
+        width: 20px;
+        height: 2px;
+        background-color: var(--text-primary);
+        left: 0;
+    }
+
+    .hamburger::before {
+        top: -6px;
+    }
+
+    .hamburger::after {
+        bottom: -6px;
+    }
+
+    /* Portfolio content */
+    .portfolio-content {
+        padding: 24px 16px;
+        padding-top: 70px;
+    }
+
+    /* Portfolio header */
+    .portfolio-header,
+    .wallet-header {
+        flex-direction: column;
+        gap: 20px;
+        padding: 20px 16px;
+    }
+
+    .portfolio-actions,
+    .wallet-actions {
+        width: 100%;
+        flex-wrap: wrap;
+    }
+
+    .portfolio-total-value,
+    .wallet-total-value {
+        font-size: 28px;
+    }
+
+    /* Stats grid - 1 column */
+    .stats-grid {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+
+    .stat-card {
+        padding: 16px;
+    }
+
+    /* Allocation */
+    .allocation-section {
+        padding: 20px 16px;
+    }
+
+    .allocation-content {
+        flex-direction: column;
+        gap: 24px;
+    }
+
+    .allocation-chart-wrapper {
+        margin: 0 auto;
+    }
+
+    .allocation-chart-wrapper canvas {
+        width: 250px !important;
+        height: 250px !important;
+    }
+
+    .allocation-legend {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+
+    /* Tables become cards on mobile */
+    .table-wrapper {
+        display: none;
+    }
+
+    .holdings-cards,
+    .assets-cards {
+        display: block;
+    }
+
+    /* Holdings cards */
+    .holding-card,
+    .asset-card {
+        background-color: var(--bg-secondary);
+        border-radius: 12px;
+        padding: 16px;
+        margin-bottom: 12px;
+    }
+
+    .holding-card-header,
+    .asset-card-header {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 16px;
+    }
+
+    .holding-card-body,
+    .asset-card-body {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+    }
+
+    .card-field {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+
+    .card-field-label {
+        font-size: 11px;
+        color: var(--text-secondary);
+        text-transform: uppercase;
+    }
+
+    .card-field-value {
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--text-primary);
+    }
+
+    /* Buttons in mobile */
+    .btn-primary,
+    .btn-secondary {
+        font-size: 13px;
+        padding: 10px 16px;
+    }
+
+    .toggle-label {
+        font-size: 13px;
+    }
+}
+
+/* Mobile Small - Portfolio (max-width: 480px) */
+@media (max-width: 480px) {
+    .portfolio-total-value,
+    .wallet-total-value {
+        font-size: 24px;
+    }
+
+    .portfolio-change,
+    .wallet-change {
+        font-size: 14px;
+    }
+
+    .stat-value {
+        font-size: 20px;
+    }
+
+    .allocation-chart-wrapper canvas {
+        width: 220px !important;
+        height: 220px !important;
+    }
+
+    .sidebar-value {
+        font-size: 16px;
+    }
+
+    .wallet-value {
+        font-size: 12px;
+    }
+}
+
 /* Print Styles */
 @media print {
     .header,

@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Manage your cryptocurrency portfolio - Track holdings, profits, and allocation">
+    <title>Portfolio | Folyo</title>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+    <!-- Stylesheets -->
+    <link rel="stylesheet" href="../css/themes.css">
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../css/portfolio.css">
+    <link rel="stylesheet" href="../css/responsive.css">
+</head>
+<body class="theme-light">
+    <!-- Header -->
+    <header class="header">
+        <div class="container">
+            <div class="header-top">
+                <!-- Logo -->
+                <div class="logo">
+                    <a href="../index.html">
+                        <h1>Folyo</h1>
+                    </a>
+                </div>
+
+                <!-- Navigation -->
+                <nav class="nav">
+                    <a href="../index.html" class="nav-link">Cryptocurrencies</a>
+                    <a href="index.html" class="nav-link active">Portfolio</a>
+                </nav>
+
+                <!-- Actions -->
+                <div class="header-actions">
+                    <!-- Currency Selector -->
+                    <select id="currency-select" class="currency-select" aria-label="Select currency">
+                        <option value="USD">USD</option>
+                    </select>
+
+                    <!-- Theme Toggle -->
+                    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle theme">
+                        <span class="theme-icon theme-icon-sun">☀️</span>
+                        <span class="theme-icon theme-icon-moon">🌙</span>
+                    </button>
+
+                    <!-- User Profile -->
+                    <div class="user-profile">
+                        <div class="user-avatar">
+                            <span class="avatar-text">U</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Portfolio Container -->
+    <div class="portfolio-container">
+        <!-- Sidebar -->
+        <aside class="portfolio-sidebar" id="portfolio-sidebar">
+            <!-- Mobile Toggle -->
+            <button class="sidebar-toggle" id="sidebar-toggle" aria-label="Toggle sidebar">
+                <span class="hamburger"></span>
+            </button>
+
+            <!-- Sidebar Content -->
+            <div class="sidebar-content">
+                <!-- Overview Button -->
+                <button class="sidebar-item active" data-view="overview" id="overview-btn">
+                    <span class="sidebar-icon">📊</span>
+                    <div class="sidebar-text">
+                        <span class="sidebar-label">Overview</span>
+                        <span class="sidebar-value">$6,264.03</span>
+                    </div>
+                </button>
+
+                <!-- My Portfolios Section -->
+                <div class="sidebar-section">
+                    <div class="sidebar-section-header">
+                        <h3>My portfolios (7)</h3>
+                        <button class="btn-icon" aria-label="Edit portfolios">✏️</button>
+                    </div>
+                    <div class="wallets-list">
+                        <button class="wallet-item" data-wallet="hold-wallet">
+                            <span class="wallet-icon">💰</span>
+                            <div class="wallet-info">
+                                <div class="wallet-name">hold wallet</div>
+                                <div class="wallet-value">$3,430.08</div>
+                            </div>
+                        </button>
+                        <button class="wallet-item" data-wallet="work-wallet">
+                            <span class="wallet-icon">💼</span>
+                            <div class="wallet-info">
+                                <div class="wallet-name">work wallet</div>
+                                <div class="wallet-value">$663.71</div>
+                            </div>
+                        </button>
+                        <button class="wallet-item" data-wallet="phantom">
+                            <span class="wallet-icon">👻</span>
+                            <div class="wallet-info">
+                                <div class="wallet-name">phantom</div>
+                                <div class="wallet-value">$602.44</div>
+                            </div>
+                        </button>
+                        <button class="wallet-item" data-wallet="kraken">
+                            <span class="wallet-icon">🦑</span>
+                            <div class="wallet-info">
+                                <div class="wallet-name">kraken</div>
+                                <div class="wallet-value">$286.42</div>
+                            </div>
+                        </button>
+                        <button class="wallet-item" data-wallet="gate-com">
+                            <span class="wallet-icon">🚪</span>
+                            <div class="wallet-info">
+                                <div class="wallet-name">gate.com</div>
+                                <div class="wallet-value">$45.91</div>
+                            </div>
+                        </button>
+                        <button class="wallet-item" data-wallet="bybit">
+                            <span class="wallet-icon">📈</span>
+                            <div class="wallet-info">
+                                <div class="wallet-name">bybit</div>
+                                <div class="wallet-value">$83.34</div>
+                            </div>
+                        </button>
+                        <button class="wallet-item" data-wallet="binance">
+                            <span class="wallet-icon">🔶</span>
+                            <div class="wallet-info">
+                                <div class="wallet-name">binance</div>
+                                <div class="wallet-value">$1,169.98</div>
+                            </div>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Others Portfolio Section -->
+                <div class="sidebar-section">
+                    <div class="sidebar-section-header">
+                        <h3>Others portfolio</h3>
+                        <button class="btn-icon" aria-label="Edit portfolios">✏️</button>
+                    </div>
+                    <div class="wallets-list">
+                        <button class="wallet-item" data-wallet="futures-binance">
+                            <span class="wallet-icon">🔮</span>
+                            <div class="wallet-info">
+                                <div class="wallet-name">FUTURES_BINANCE</div>
+                                <div class="wallet-value negative">-$0.4058</div>
+                            </div>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Create Portfolio Button -->
+                <button class="btn-create-portfolio">
+                    <span>+</span> Create portfolio
+                </button>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="portfolio-content">
+            <!-- Overview View -->
+            <div id="overview-view" class="portfolio-view active">
+                <!-- Header -->
+                <div class="portfolio-header">
+                    <div class="portfolio-title-section">
+                        <span class="portfolio-label">Total value</span>
+                        <h1 class="portfolio-total-value">$6,264.03</h1>
+                        <span class="portfolio-change negative">-$142.80 <span class="arrow">▼</span>2.23% (24h)</span>
+                    </div>
+                    <div class="portfolio-actions">
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="show-charts-overview">
+                            <span class="toggle-slider"></span>
+                            <span class="toggle-label">Show charts</span>
+                        </label>
+                        <button class="btn-primary">+ Create portfolio</button>
+                    </div>
+                </div>
+
+                <!-- Allocation Section -->
+                <div class="allocation-section">
+                    <div class="allocation-header">
+                        <h2>Allocation</h2>
+                        <div class="allocation-tabs">
+                            <button class="allocation-tab active">Token</button>
+                            <button class="allocation-tab">Portfolio</button>
+                        </div>
+                    </div>
+                    <div class="allocation-content">
+                        <div class="allocation-chart-wrapper">
+                            <canvas id="allocation-chart-overview" width="300" height="300"></canvas>
+                            <div class="chart-center-text">
+                                <span class="chart-center-value" id="chart-center-overview">8</span>
+                                <span class="chart-center-label">Assets</span>
+                            </div>
+                        </div>
+                        <div class="allocation-legend" id="allocation-legend-overview">
+                            <!-- Rendered by JS -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Holdings Section -->
+                <div class="holdings-section">
+                    <h2>Holdings</h2>
+                    <div class="table-wrapper">
+                        <table class="holdings-table">
+                            <thead>
+                                <tr>
+                                    <th>Assets</th>
+                                    <th>Portfolio Allocation</th>
+                                    <th>Price</th>
+                                    <th>1h%</th>
+                                    <th>24h%</th>
+                                    <th>7d%</th>
+                                    <th>Balance</th>
+                                    <th>Value</th>
+                                </tr>
+                            </thead>
+                            <tbody id="holdings-table-body">
+                                <!-- Rendered by JS -->
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Mobile Cards -->
+                    <div class="holdings-cards" id="holdings-cards">
+                        <!-- Rendered by JS for mobile -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Wallet View -->
+            <div id="wallet-view" class="portfolio-view">
+                <!-- Wallet Header -->
+                <div class="wallet-header">
+                    <div class="wallet-title-section">
+                        <h1 class="wallet-name" id="wallet-name">hold wallet</h1>
+                        <div class="wallet-total-value" id="wallet-total-value">$3,430.08</div>
+                        <span class="wallet-change negative" id="wallet-change">-$76.58 <span class="arrow">▼</span>2.18% (24h)</span>
+                    </div>
+                    <div class="wallet-actions">
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="show-charts-wallet">
+                            <span class="toggle-slider"></span>
+                            <span class="toggle-label">Show charts</span>
+                        </label>
+                        <button class="btn-primary">+ Add Transaction</button>
+                        <button class="btn-secondary">⬇ Export</button>
+                    </div>
+                </div>
+
+                <!-- Stats Grid -->
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <span class="stat-label">All-time profit</span>
+                        <span class="stat-value positive" id="stat-profit">+$3,430.08</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-label">Cost Basis</span>
+                        <span class="stat-value" id="stat-cost-basis">$0</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-label">Best Performer</span>
+                        <div class="performer" id="stat-best-performer">
+                            <div class="performer-token">🟣 AAVE</div>
+                            <div class="performer-value positive">+$1,268.37<br><span class="performer-percent">~%</span></div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-label">Worst Performer</span>
+                        <div class="performer" id="stat-worst-performer">
+                            <div class="performer-token">🟣 POL</div>
+                            <div class="performer-value positive">+$3,313.9<br><span class="performer-percent">~%</span></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Wallet Allocation -->
+                <div class="allocation-section">
+                    <div class="allocation-header">
+                        <h2>Allocation</h2>
+                    </div>
+                    <div class="allocation-content">
+                        <div class="allocation-chart-wrapper">
+                            <canvas id="allocation-chart-wallet" width="300" height="300"></canvas>
+                            <div class="chart-center-text">
+                                <span class="chart-center-value" id="chart-center-wallet">7</span>
+                                <span class="chart-center-label">Assets</span>
+                            </div>
+                        </div>
+                        <div class="allocation-legend" id="allocation-legend-wallet">
+                            <!-- Rendered by JS -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Assets Section -->
+                <div class="assets-section">
+                    <h2>Assets</h2>
+                    <div class="table-wrapper">
+                        <table class="assets-table">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Price</th>
+                                    <th>1h%</th>
+                                    <th>24h%</th>
+                                    <th>7d%</th>
+                                    <th>Holdings</th>
+                                    <th>Avg Buy Price</th>
+                                    <th>Profit/Loss</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="assets-table-body">
+                                <!-- Rendered by JS -->
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Mobile Cards -->
+                    <div class="assets-cards" id="assets-cards">
+                        <!-- Rendered by JS for mobile -->
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- JavaScript -->
+    <script src="../js/config.js"></script>
+    <script src="../js/theme.js"></script>
+    <script src="../js/currency.js"></script>
+    <script src="../js/portfolio.js"></script>
+</body>
+</html>
