@@ -192,7 +192,7 @@ const Portfolio = {
                 <div class="legend-color" style="background-color: ${item.color}"></div>
                 <div class="legend-info">
                     <span class="legend-token">${item.token}</span>
-                    <span class="legend-percent">${item.percent}%</span>
+                    <span class="legend-percent">${item.percent.toFixed(2)}%</span>
                 </div>
             </div>
         `).join('');
