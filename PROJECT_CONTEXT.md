@@ -37,7 +37,7 @@
 
 ### Live URLs
 - Home page: `index.html`
-- Currency detail: `currency.html?slug=bitcoin`
+- Currency detail: `currency/?slug=bitcoin`
 
 ---
 
@@ -68,7 +68,8 @@
 ```
 folyo/
 ├── index.html                      # Main listing page
-├── currency.html                   # Cryptocurrency detail page
+├── currency/
+│   └── index.html                  # Cryptocurrency detail page
 ├── README.md                       # Project README
 ├── PROJECT_CONTEXT.md             # This file (context documentation)
 ├── .env                           # API key (gitignored)
@@ -154,7 +155,7 @@ folyo/
    - Tablet: 7-column table
    - Mobile: Card-based layout
 
-### Currency Detail Page (currency.html)
+### Currency Detail Page (currency/index.html)
 1. **Cryptocurrency Header**
    - Logo, name, symbol, rank
    - Current price (full precision)
@@ -214,7 +215,7 @@ index.html
     ├── ui.js               (Main UI rendering)
     └── app.js              (App initialization & orchestration)
 
-currency.html
+currency/index.html
     ├── config.js
     ├── utils.js
     ├── api.js

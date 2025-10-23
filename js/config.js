@@ -4,7 +4,7 @@
 
 const CONFIG = {
     // API
-    API_BASE_URL: 'api/proxy.php',
+    API_BASE_URL: '/api/proxy.php',
 
     // Pagination
     ITEMS_PER_PAGE: 100,

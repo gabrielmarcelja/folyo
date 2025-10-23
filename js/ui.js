@@ -271,7 +271,7 @@ const UI = {
 
             // Make row clickable
             row.addEventListener('click', () => {
-                window.location.href = `currency.html?slug=${crypto.slug}`;
+                window.location.href = `currency/?slug=${crypto.slug}`;
             });
 
             tbody.appendChild(row);
@@ -353,7 +353,7 @@ const UI = {
 
             // Make card clickable
             card.addEventListener('click', () => {
-                window.location.href = `currency.html?slug=${crypto.slug}`;
+                window.location.href = `currency/?slug=${crypto.slug}`;
             });
 
             cardsContainer.appendChild(card);
