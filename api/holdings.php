@@ -290,8 +290,8 @@ function getAllUserHoldings() {
     // Get unique crypto IDs
     $cryptoIds = array_unique(array_column($holdings, 'crypto_id'));
 
-    // Fetch current prices
-    $currentPrices = fetchCurrentPrices($cryptoIds);
+    // Fetch current prices WITH price changes (1h, 24h, 7d)
+    $priceData = fetchCurrentPricesWithChanges($cryptoIds);
 
     // Calculate values
     $totalValue = 0;
@@ -299,16 +299,30 @@ function getAllUserHoldings() {
 
     foreach ($holdings as &$holding) {
         $cryptoId = $holding['crypto_id'];
-        $currentPrice = $currentPrices[$cryptoId] ?? 0;
+        $cryptoPriceData = $priceData[$cryptoId] ?? ['price' => 0, 'percent_change_1h' => 0, 'percent_change_24h' => 0, 'percent_change_7d' => 0];
+        $currentPrice = $cryptoPriceData['price'];
+
+        // Current value
         $currentValue = floatval($holding['total_quantity']) * $currentPrice;
+
+        // Profit/Loss
         $costBasis = floatval($holding['cost_basis']);
         $profitLoss = $currentValue - $costBasis;
         $profitLossPercent = $costBasis > 0 ? ($profitLoss / $costBasis * 100) : 0;
 
+        // Calculate value change in last 24h
+        $priceChange24h = $cryptoPriceData['percent_change_24h'];
+        $valueChange24h = $currentValue * ($priceChange24h / 100);
+
+        // Add calculated fields
         $holding['current_price'] = $currentPrice;
         $holding['current_value'] = $currentValue;
         $holding['profit_loss'] = $profitLoss;
         $holding['profit_loss_percent'] = $profitLossPercent;
+        $holding['price_change_1h'] = $cryptoPriceData['percent_change_1h'];
+        $holding['price_change_24h'] = $cryptoPriceData['percent_change_24h'];
+        $holding['price_change_7d'] = $cryptoPriceData['percent_change_7d'];
+        $holding['value_change_24h'] = $valueChange24h;
 
         $totalValue += $currentValue;
         $totalCost += $costBasis;

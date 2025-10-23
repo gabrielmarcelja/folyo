@@ -58,14 +58,22 @@ const PortfolioManager = {
      */
     async loadOverview() {
         try {
+            console.log('🔍 loadOverview() CALLED');
             this.showLoadingState();
 
             // Fetch all holdings across all portfolios
-            const holdingsData = await APIClient.getAllUserHoldings();
+            const response = await APIClient.getAllUserHoldings();
+            console.log('🔍 API Response:', response);
+
+            const holdingsData = response.holdings || response;
+            console.log('🔍 Holdings Data:', holdingsData);
+            console.log('🔍 Holdings Count:', holdingsData.length);
+
             this.allHoldings = holdingsData;
 
             // Calculate overview statistics
             const overview = this.calculateOverview(holdingsData);
+            console.log('🔍 Calculated Overview:', overview);
 
             // Render overview
             this.renderOverview(overview);
@@ -249,15 +257,23 @@ const PortfolioManager = {
      * @param {array} holdingsData
      */
     calculateOverview(holdingsData) {
+        console.log('📊 calculateOverview() - Input:', holdingsData);
+
         let totalValue = 0;
         let totalChange24h = 0;
         let allocationMap = new Map();
-        let holdings = [];
+        let holdingsMap = new Map(); // Group by crypto to aggregate across portfolios
 
         // Process holdings data
         if (holdingsData && holdingsData.length > 0) {
-            holdingsData.forEach(holding => {
+            console.log('📊 Processing', holdingsData.length, 'holdings');
+
+            holdingsData.forEach((holding, index) => {
+                console.log(`📊 Processing holding ${index}:`, holding);
+
                 const currentValue = parseFloat(holding.current_value || 0);
+                console.log(`📊 Current value for ${holding.crypto_symbol}:`, currentValue);
+
                 totalValue += currentValue;
                 totalChange24h += parseFloat(holding.value_change_24h || 0);
 
@@ -265,28 +281,48 @@ const PortfolioManager = {
                 if (allocationMap.has(holding.crypto_symbol)) {
                     const existing = allocationMap.get(holding.crypto_symbol);
                     existing.value += currentValue;
+                    console.log(`📊 Added to existing ${holding.crypto_symbol}, new total:`, existing.value);
                 } else {
                     allocationMap.set(holding.crypto_symbol, {
                         token: holding.crypto_symbol,
                         value: currentValue,
                         color: this.getColorForToken(holding.crypto_symbol)
                     });
+                    console.log(`📊 New allocation for ${holding.crypto_symbol}:`, currentValue);
                 }
 
-                // Add to holdings array
-                holdings.push({
-                    name: holding.crypto_name,
-                    symbol: holding.crypto_symbol,
-                    logo: `https://s2.coinmarketcap.com/static/img/coins/64x64/${holding.crypto_id}.png`,
-                    price: parseFloat(holding.current_price || 0),
-                    change1h: parseFloat(holding.price_change_1h || 0),
-                    change24h: parseFloat(holding.price_change_24h || 0),
-                    change7d: parseFloat(holding.price_change_7d || 0),
-                    balance: parseFloat(holding.total_quantity || 0),
-                    value: currentValue
-                });
+                // Group holdings by crypto (aggregate across portfolios)
+                if (holdingsMap.has(holding.crypto_symbol)) {
+                    const existing = holdingsMap.get(holding.crypto_symbol);
+                    existing.balance += parseFloat(holding.total_quantity || 0);
+                    existing.value += currentValue;
+                    existing.wallets.push(holding.portfolio_name);
+                } else {
+                    holdingsMap.set(holding.crypto_symbol, {
+                        name: holding.crypto_name,
+                        symbol: holding.crypto_symbol,
+                        logo: `https://s2.coinmarketcap.com/static/img/coins/64x64/${holding.crypto_id}.png`,
+                        price: parseFloat(holding.current_price || 0),
+                        change1h: parseFloat(holding.price_change_1h || 0),
+                        change24h: parseFloat(holding.price_change_24h || 0),
+                        change7d: parseFloat(holding.price_change_7d || 0),
+                        balance: parseFloat(holding.total_quantity || 0),
+                        value: currentValue,
+                        wallets: [holding.portfolio_name]
+                    });
+                }
             });
+
+            console.log('📊 Total Value:', totalValue);
+            console.log('📊 Total Change 24h:', totalChange24h);
+            console.log('📊 Allocation Map:', allocationMap);
+            console.log('📊 Holdings Map:', holdingsMap);
+        } else {
+            console.log('📊 No holdings data to process');
         }
+
+        // Convert holdings map to array
+        const holdings = Array.from(holdingsMap.values());
 
         // Calculate allocation percentages
         const allocation = Array.from(allocationMap.values()).map(item => ({
@@ -318,10 +354,16 @@ const PortfolioManager = {
      * @param {object} overview
      */
     renderOverview(overview) {
+        console.log('🎨 renderOverview() - Overview data:', overview);
+
         // Update header values
         const totalValueEl = document.querySelector('.portfolio-total-value');
         if (totalValueEl) {
-            totalValueEl.textContent = '$' + overview.totalValue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+            const formattedValue = '$' + overview.totalValue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+            console.log('🎨 Setting total value to:', formattedValue);
+            totalValueEl.textContent = formattedValue;
+        } else {
+            console.log('🎨 ERROR: .portfolio-total-value element not found!');
         }
 
         const changeEl = document.querySelector('.portfolio-change');
@@ -330,6 +372,9 @@ const PortfolioManager = {
             const arrow = overview.changePercent24h >= 0 ? '▲' : '▼';
             changeEl.className = 'portfolio-change ' + changeClass;
             changeEl.innerHTML = `${overview.change24h >= 0 ? '+' : ''}$${Math.abs(overview.change24h).toFixed(2)} <span class="arrow">${arrow}</span>${Math.abs(overview.changePercent24h).toFixed(2)}% (24h)`;
+            console.log('🎨 Set change to:', changeEl.innerHTML);
+        } else {
+            console.log('🎨 ERROR: .portfolio-change element not found!');
         }
 
         // Update overview button value in sidebar
@@ -338,6 +383,7 @@ const PortfolioManager = {
             const sidebarValue = overviewBtn.querySelector('.sidebar-value');
             if (sidebarValue) {
                 sidebarValue.textContent = '$' + overview.totalValue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+                console.log('🎨 Set sidebar value');
             }
         }
 
@@ -345,17 +391,25 @@ const PortfolioManager = {
         const chartCenter = document.getElementById('chart-center-overview');
         if (chartCenter) {
             chartCenter.textContent = overview.holdings.length;
+            console.log('🎨 Set asset count to:', overview.holdings.length);
         }
 
         // Use existing Portfolio rendering methods
+        console.log('🎨 Allocation length:', overview.allocation.length);
         if (overview.allocation.length > 0) {
+            console.log('🎨 Rendering allocation chart and legend');
             Portfolio.renderAllocationChart('allocation-chart-overview', overview.allocation);
             Portfolio.renderAllocationLegend('allocation-legend-overview', overview.allocation);
+        } else {
+            console.log('🎨 No allocation to render');
         }
 
+        console.log('🎨 Holdings length:', overview.holdings.length);
         if (overview.holdings.length > 0) {
+            console.log('🎨 Rendering holdings table with', overview.holdings.length, 'items');
             Portfolio.renderHoldingsTable(overview.holdings);
         } else {
+            console.log('🎨 No holdings - showing empty message');
             const tbody = document.getElementById('holdings-table-body');
             if (tbody) {
                 tbody.innerHTML = '<tr><td colspan="8" class="empty-message">No holdings yet. Create a portfolio and add transactions to get started.</td></tr>';
@@ -363,6 +417,7 @@ const PortfolioManager = {
         }
 
         // Show overview view
+        console.log('🎨 Switching to overview view');
         document.getElementById('overview-view').classList.add('active');
         document.getElementById('wallet-view').classList.remove('active');
 
@@ -371,6 +426,8 @@ const PortfolioManager = {
             item.classList.remove('active');
         });
         document.getElementById('overview-btn').classList.add('active');
+
+        console.log('🎨 renderOverview() COMPLETE');
     },
 
     /**

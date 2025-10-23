@@ -469,6 +469,9 @@ const TransactionManager = {
             // Reload portfolio data
             await PortfolioManager.loadPortfolio(this.currentPortfolioId);
 
+            // Also reload overview to update total statistics across all portfolios
+            await PortfolioManager.loadOverview();
+
         } catch (error) {
             console.error('Transaction error:', error);
             this.showError(error.message || 'Failed to create transaction');
@@ -744,6 +747,9 @@ const TransactionManager = {
             if (PortfolioManager.currentPortfolio) {
                 await PortfolioManager.loadPortfolio(PortfolioManager.currentPortfolio);
             }
+
+            // Also reload overview to update total statistics across all portfolios
+            await PortfolioManager.loadOverview();
         } catch (error) {
             console.error('Delete error:', error);
             AuthManager.showMessage(error.message || 'Failed to delete transaction', 'error');
