@@ -1225,6 +1225,7 @@ input:focus-visible {
     }
 }
 
+/*
 .holdings-table tbody tr::before,
 .assets-table tbody tr::before {
     content: '';
@@ -1237,6 +1238,7 @@ input:focus-visible {
     transition: height 0.3s ease;
     border-radius: 0 4px 4px 0;
 }
+*/
 
 .holdings-table tbody tr:hover,
 .assets-table tbody tr:hover {
@@ -1898,5 +1900,259 @@ input:focus-visible {
 
     .transactions-actions button {
         flex: 1;
+    }
+}
+
+/* ========================================
+   HISTORY CHART SECTION
+   ======================================== */
+
+.history-section {
+    background: var(--bg-secondary);
+    border-radius: 16px;
+    padding: 24px;
+    margin-bottom: 24px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+}
+
+.history-section:hover {
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+}
+
+.history-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+    gap: 16px;
+}
+
+.history-header h2 {
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 0;
+}
+
+/* Period Buttons */
+.period-buttons {
+    display: flex;
+    gap: 8px;
+    background: var(--bg-tertiary);
+    padding: 4px;
+    border-radius: 8px;
+}
+
+.period-btn {
+    padding: 6px 16px;
+    border: none;
+    background: transparent;
+    color: var(--text-secondary);
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    border-radius: 6px;
+    transition: all 0.2s ease;
+    font-family: 'Inter', sans-serif;
+}
+
+.period-btn:hover {
+    background: var(--bg-hover);
+    color: var(--text-primary);
+}
+
+.period-btn.active {
+    background: var(--primary-color);
+    color: white;
+    box-shadow: 0 2px 8px rgba(22, 199, 132, 0.3);
+}
+
+/* Chart Container */
+.history-chart-container {
+    position: relative;
+    width: 100%;
+    min-height: 300px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--bg-primary);
+    border-radius: 12px;
+    padding: 16px;
+}
+
+.history-chart-container canvas {
+    width: 100%;
+    height: auto;
+    max-width: 100%;
+}
+
+/* Tooltip */
+.chart-tooltip {
+    position: fixed;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 12px;
+    pointer-events: none;
+    z-index: 1000;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+    opacity: 0;
+    transition: opacity 0.2s ease;
+    min-width: 140px;
+}
+
+.chart-tooltip.visible {
+    opacity: 1;
+}
+
+.tooltip-date {
+    font-size: 12px;
+    color: var(--text-secondary);
+    margin-bottom: 4px;
+    font-weight: 500;
+}
+
+.tooltip-value {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 4px;
+}
+
+.tooltip-change {
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.tooltip-change.positive {
+    color: var(--green);
+}
+
+.tooltip-change.negative {
+    color: var(--red);
+}
+
+/* Loading State */
+.chart-loading {
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    color: var(--text-secondary);
+}
+
+.chart-loading .spinner {
+    width: 32px;
+    height: 32px;
+    border: 3px solid var(--bg-tertiary);
+    border-top-color: var(--primary-color);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* Empty State */
+.chart-empty {
+    display: none;
+    color: var(--text-secondary);
+    font-size: 14px;
+    text-align: center;
+    padding: 40px 20px;
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+    .history-section {
+        padding: 16px;
+        margin-bottom: 16px;
+    }
+
+    .history-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+    }
+
+    .period-buttons {
+        width: 100%;
+        justify-content: space-between;
+    }
+
+    .period-btn {
+        flex: 1;
+        padding: 8px 12px;
+        font-size: 13px;
+    }
+
+    .history-chart-container {
+        min-height: 200px;
+        padding: 12px;
+    }
+
+    .chart-tooltip {
+        padding: 8px 10px;
+        font-size: 11px;
+        min-width: 120px;
+    }
+
+    .tooltip-value {
+        font-size: 15px;
+    }
+
+    .tooltip-date {
+        font-size: 11px;
+    }
+
+    .tooltip-change {
+        font-size: 11px;
+    }
+}
+
+/* ========================================
+   CHARTS GRID - SIDE BY SIDE LAYOUT
+   ======================================== */
+
+.charts-grid {
+    display: grid;
+    gap: 24px;
+    margin-bottom: 24px;
+}
+
+/* Desktop: History + Allocation lado a lado (50% cada) */
+@media (min-width: 769px) {
+    .charts-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    /* Remove margins individuais já que o gap controla o espaçamento */
+    .charts-grid .history-section,
+    .charts-grid .allocation-section {
+        margin-bottom: 0;
+    }
+}
+
+/* Tablet intermediário (769px - 1024px): ajuste de proporção */
+@media (min-width: 769px) and (max-width: 1024px) {
+    .charts-grid {
+        gap: 16px;
+    }
+}
+
+/* Mobile: Manter layout stacked (um embaixo do outro) */
+@media (max-width: 768px) {
+    .charts-grid {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+
+    /* Em mobile, mantém as margins individuais */
+    .charts-grid .history-section,
+    .charts-grid .allocation-section {
+        margin-bottom: 16px;
     }
 }

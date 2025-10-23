@@ -427,6 +427,12 @@ const PortfolioManager = {
         });
         document.getElementById('overview-btn').classList.add('active');
 
+        // Load history chart for overview (all portfolios)
+        if (Portfolio.historyChartOverview) {
+            Portfolio.historyChartOverview.loadData(null, '24h'); // Start with 24h period
+            console.log('📊 Loaded overview history chart');
+        }
+
         console.log('🎨 renderOverview() COMPLETE');
     },
 
@@ -575,6 +581,12 @@ const PortfolioManager = {
         const exportWalletBtn = document.getElementById('export-wallet-btn');
         if (exportWalletBtn) {
             exportWalletBtn.onclick = () => TransactionManager.exportTransactionsCSV(portfolioId);
+        }
+
+        // Load history chart for this portfolio
+        if (Portfolio.historyChartWallet) {
+            Portfolio.historyChartWallet.loadData(portfolioId, '24h'); // Start with 24h period
+            console.log('📊 Loaded wallet history chart for portfolio', portfolioId);
         }
 
         // Show wallet view

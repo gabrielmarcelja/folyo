@@ -192,5 +192,23 @@ const APIClient = {
      */
     async getAllUserHoldings() {
         return this.request('/holdings.php', 'GET');
+    },
+
+    // ========================================
+    // PORTFOLIO HISTORY
+    // ========================================
+
+    /**
+     * Get portfolio history data for charting
+     * @param {number|null} portfolioId - Portfolio ID (null for all portfolios)
+     * @param {string} period - Period: 24h, 7d, 30d
+     * @returns {Promise<object>} History data with points and summary
+     */
+    async getPortfolioHistory(portfolioId, period = '24h') {
+        const params = new URLSearchParams({ period });
+        if (portfolioId) {
+            params.append('portfolio_id', portfolioId);
+        }
+        return this.request(`/portfolio-history.php?${params.toString()}`, 'GET');
     }
 };

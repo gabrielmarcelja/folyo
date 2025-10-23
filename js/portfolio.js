@@ -6,6 +6,8 @@
 const Portfolio = {
     currentView: 'overview',
     currentWallet: null,
+    historyChartOverview: null,
+    historyChartWallet: null,
 
     /**
      * Initialize portfolio page
@@ -29,6 +31,9 @@ const Portfolio = {
         // Initialize managers
         TransactionManager.init();
         await PortfolioManager.init();
+
+        // Initialize history charts
+        this.initHistoryCharts();
 
         console.log('Portfolio initialized');
     },
@@ -121,6 +126,54 @@ const Portfolio = {
         }
     },
 
+    /**
+     * Initialize history charts
+     */
+    initHistoryCharts() {
+        // Initialize Overview chart
+        this.historyChartOverview = new PortfolioChart('history-chart-overview', {
+            tooltipId: 'history-tooltip-overview',
+            loadingId: 'history-loading-overview',
+            emptyId: 'history-empty-overview'
+        });
+
+        // Initialize Wallet chart
+        this.historyChartWallet = new PortfolioChart('history-chart-wallet', {
+            tooltipId: 'history-tooltip-wallet',
+            loadingId: 'history-loading-wallet',
+            emptyId: 'history-empty-wallet'
+        });
+
+        // Setup period button event listeners for Overview
+        document.querySelectorAll('#overview-view .period-btn').forEach(btn => {
+            btn.addEventListener('click', async () => {
+                // Remove active from all buttons
+                document.querySelectorAll('#overview-view .period-btn').forEach(b => b.classList.remove('active'));
+                // Add active to clicked button
+                btn.classList.add('active');
+
+                const period = btn.dataset.period;
+                await this.historyChartOverview.loadData(null, period); // null = all portfolios
+            });
+        });
+
+        // Setup period button event listeners for Wallet
+        document.querySelectorAll('#wallet-view .period-btn').forEach(btn => {
+            btn.addEventListener('click', async () => {
+                // Remove active from all buttons
+                document.querySelectorAll('#wallet-view .period-btn').forEach(b => b.classList.remove('active'));
+                // Add active to clicked button
+                btn.classList.add('active');
+
+                const period = btn.dataset.period;
+                if (PortfolioManager.currentPortfolio) {
+                    await this.historyChartWallet.loadData(PortfolioManager.currentPortfolio, period);
+                }
+            });
+        });
+
+        console.log('✅ History charts initialized');
+    },
 
     /**
      * Render allocation donut chart with enhanced visuals

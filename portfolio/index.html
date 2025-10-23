@@ -198,25 +198,55 @@
                     </div>
                 </div>
 
-                <!-- Allocation Section -->
-                <div class="allocation-section">
-                    <div class="allocation-header">
-                        <h2>Allocation</h2>
-                        <div class="allocation-tabs">
-                            <button class="allocation-tab active">Token</button>
-                            <button class="allocation-tab">Portfolio</button>
-                        </div>
-                    </div>
-                    <div class="allocation-content">
-                        <div class="allocation-chart-wrapper">
-                            <canvas id="allocation-chart-overview" width="300" height="300"></canvas>
-                            <div class="chart-center-text">
-                                <span class="chart-center-value" id="chart-center-overview">0</span>
-                                <span class="chart-center-label">Assets</span>
+                <!-- Charts Grid (Desktop: side by side) -->
+                <div class="charts-grid">
+                    <!-- History Section -->
+                    <div class="history-section">
+                        <div class="history-header">
+                            <h2>History</h2>
+                            <div class="period-buttons">
+                                <button class="period-btn active" data-period="24h">24h</button>
+                                <button class="period-btn" data-period="7d">7d</button>
+                                <button class="period-btn" data-period="30d">30d</button>
                             </div>
                         </div>
-                        <div class="allocation-legend" id="allocation-legend-overview">
-                            <!-- Rendered by JS -->
+                        <div class="history-chart-container">
+                            <canvas id="history-chart-overview"></canvas>
+                            <div class="chart-tooltip" id="history-tooltip-overview" style="display: none;">
+                                <div class="tooltip-date"></div>
+                                <div class="tooltip-value"></div>
+                                <div class="tooltip-change"></div>
+                            </div>
+                            <div class="chart-loading" id="history-loading-overview" style="display: none;">
+                                <div class="spinner"></div>
+                                <span>Loading chart...</span>
+                            </div>
+                            <div class="chart-empty" id="history-empty-overview" style="display: none;">
+                                No data available for this period
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Allocation Section -->
+                    <div class="allocation-section">
+                        <div class="allocation-header">
+                            <h2>Allocation</h2>
+                            <div class="allocation-tabs">
+                                <button class="allocation-tab active">Token</button>
+                                <button class="allocation-tab">Portfolio</button>
+                            </div>
+                        </div>
+                        <div class="allocation-content">
+                            <div class="allocation-chart-wrapper">
+                                <canvas id="allocation-chart-overview" width="300" height="300"></canvas>
+                                <div class="chart-center-text">
+                                    <span class="chart-center-value" id="chart-center-overview">0</span>
+                                    <span class="chart-center-label">Assets</span>
+                                </div>
+                            </div>
+                            <div class="allocation-legend" id="allocation-legend-overview">
+                                <!-- Rendered by JS -->
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -297,21 +327,51 @@
                     </div>
                 </div>
 
-                <!-- Wallet Allocation -->
-                <div class="allocation-section">
-                    <div class="allocation-header">
-                        <h2>Allocation</h2>
-                    </div>
-                    <div class="allocation-content">
-                        <div class="allocation-chart-wrapper">
-                            <canvas id="allocation-chart-wallet" width="300" height="300"></canvas>
-                            <div class="chart-center-text">
-                                <span class="chart-center-value" id="chart-center-wallet">0</span>
-                                <span class="chart-center-label">Assets</span>
+                <!-- Charts Grid (Desktop: side by side) -->
+                <div class="charts-grid">
+                    <!-- History Section -->
+                    <div class="history-section">
+                        <div class="history-header">
+                            <h2>History</h2>
+                            <div class="period-buttons">
+                                <button class="period-btn active" data-period="24h">24h</button>
+                                <button class="period-btn" data-period="7d">7d</button>
+                                <button class="period-btn" data-period="30d">30d</button>
                             </div>
                         </div>
-                        <div class="allocation-legend" id="allocation-legend-wallet">
-                            <!-- Rendered by JS -->
+                        <div class="history-chart-container">
+                            <canvas id="history-chart-wallet"></canvas>
+                            <div class="chart-tooltip" id="history-tooltip-wallet" style="display: none;">
+                                <div class="tooltip-date"></div>
+                                <div class="tooltip-value"></div>
+                                <div class="tooltip-change"></div>
+                            </div>
+                            <div class="chart-loading" id="history-loading-wallet" style="display: none;">
+                                <div class="spinner"></div>
+                                <span>Loading chart...</span>
+                            </div>
+                            <div class="chart-empty" id="history-empty-wallet" style="display: none;">
+                                No data available for this period
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Wallet Allocation -->
+                    <div class="allocation-section">
+                        <div class="allocation-header">
+                            <h2>Allocation</h2>
+                        </div>
+                        <div class="allocation-content">
+                            <div class="allocation-chart-wrapper">
+                                <canvas id="allocation-chart-wallet" width="300" height="300"></canvas>
+                                <div class="chart-center-text">
+                                    <span class="chart-center-value" id="chart-center-wallet">0</span>
+                                    <span class="chart-center-label">Assets</span>
+                                </div>
+                            </div>
+                            <div class="allocation-legend" id="allocation-legend-wallet">
+                                <!-- Rendered by JS -->
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -638,6 +698,7 @@
     <script src="../js/auth.js"></script>
     <script src="../js/portfolio-manager.js"></script>
     <script src="../js/transaction-manager.js"></script>
+    <script src="../js/portfolio-chart.js"></script>
     <script src="../js/portfolio.js"></script>
 </body>
 </html>
