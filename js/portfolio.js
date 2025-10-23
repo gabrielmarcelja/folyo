@@ -30,10 +30,12 @@ const Portfolio = {
 
         // Initialize managers
         TransactionManager.init();
-        await PortfolioManager.init();
 
-        // Initialize history charts
+        // Initialize history charts (BEFORE loading data)
         this.initHistoryCharts();
+
+        // Load portfolio data (charts already exist)
+        await PortfolioManager.init();
 
         console.log('Portfolio initialized');
     },
