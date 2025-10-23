@@ -22,6 +22,13 @@
     <header class="header">
         <div class="container">
             <div class="header-top">
+                <!-- Mobile Menu Toggle -->
+                <button class="mobile-menu-toggle" id="mobile-menu-toggle" aria-label="Toggle mobile menu">
+                    <span class="hamburger-line"></span>
+                    <span class="hamburger-line"></span>
+                    <span class="hamburger-line"></span>
+                </button>
+
                 <!-- Logo -->
                 <div class="logo">
                     <h1>Folyo</h1>
@@ -168,6 +175,77 @@
             <p>&copy; 2024 Folyo.</p>
         </div>
     </footer>
+
+    <!-- Mobile Navigation Drawer -->
+    <div class="mobile-nav-drawer" id="mobile-nav-drawer">
+        <div class="mobile-nav-header">
+            <div class="logo">
+                <h2>Folyo</h2>
+            </div>
+            <button class="mobile-nav-close" id="mobile-nav-close" aria-label="Close menu">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+            </button>
+        </div>
+
+        <nav class="mobile-nav">
+            <a href="index.html" class="mobile-nav-link active">
+                <span class="mobile-nav-icon">📊</span>
+                <span class="mobile-nav-text">Cryptocurrencies</span>
+            </a>
+            <a href="portfolio/index.html" class="mobile-nav-link">
+                <span class="mobile-nav-icon">💼</span>
+                <span class="mobile-nav-text">Portfolio</span>
+            </a>
+            <a href="#" class="mobile-nav-link">
+                <span class="mobile-nav-icon">⭐</span>
+                <span class="mobile-nav-text">Watchlist</span>
+            </a>
+        </nav>
+
+        <div class="mobile-nav-divider"></div>
+
+        <div class="mobile-nav-settings">
+            <div class="mobile-nav-item">
+                <label for="mobile-currency-select" class="mobile-nav-label">Currency</label>
+                <select id="mobile-currency-select" class="mobile-currency-select">
+                    <option value="USD">USD 🇺🇸</option>
+                    <option value="EUR">EUR 🇪🇺</option>
+                    <option value="BRL">BRL 🇧🇷</option>
+                    <option value="GBP">GBP 🇬🇧</option>
+                    <option value="JPY">JPY 🇯🇵</option>
+                    <option value="AUD">AUD 🇦🇺</option>
+                    <option value="CAD">CAD 🇨🇦</option>
+                    <option value="CHF">CHF 🇨🇭</option>
+                    <option value="CNY">CNY 🇨🇳</option>
+                    <option value="KRW">KRW 🇰🇷</option>
+                    <option value="INR">INR 🇮🇳</option>
+                    <option value="MXN">MXN 🇲🇽</option>
+                    <option value="RUB">RUB 🇷🇺</option>
+                </select>
+            </div>
+
+            <div class="mobile-nav-item">
+                <label class="mobile-nav-label">Theme</label>
+                <button id="mobile-theme-toggle" class="mobile-theme-toggle">
+                    <span class="mobile-theme-icon">🌙</span>
+                    <span class="mobile-theme-text">Dark Mode</span>
+                </button>
+            </div>
+        </div>
+
+        <div class="mobile-nav-divider"></div>
+
+        <div class="mobile-nav-auth">
+            <button class="mobile-btn-login">Login</button>
+            <button class="mobile-btn-signup">Sign Up</button>
+        </div>
+    </div>
+
+    <!-- Mobile Nav Backdrop -->
+    <div class="mobile-nav-backdrop" id="mobile-nav-backdrop"></div>
 
     <!-- Login Modal -->
     <div id="login-modal" class="modal">

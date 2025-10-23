@@ -33,20 +33,25 @@
     /* Header */
     .header-top {
         gap: 12px;
-        flex-wrap: wrap;
+    }
+
+    /* Show mobile menu toggle */
+    .mobile-menu-toggle {
+        display: flex;
     }
 
     .logo h1 {
         font-size: 20px;
     }
 
+    /* Hide desktop navigation */
     .nav {
-        display: none; /* Show hamburger menu instead */
+        display: none;
     }
 
     .header-actions {
         gap: 8px;
-        flex-wrap: wrap;
+        margin-left: auto;
     }
 
     .currency-select {
@@ -248,34 +253,60 @@
 /* Tablet - Portfolio (768px - 1024px) */
 @media (max-width: 1024px) {
     .portfolio-sidebar {
-        width: 220px;
+        width: 260px;
+    }
+
+    .sidebar-content {
+        padding: 28px 20px;
     }
 
     .portfolio-content {
-        padding: 24px 16px;
+        padding: 32px 24px;
+    }
+
+    .portfolio-header,
+    .wallet-header {
+        padding: 32px 28px;
     }
 
     .stats-grid {
         grid-template-columns: repeat(2, 1fr);
+        gap: 16px;
+    }
+
+    .stat-card {
+        padding: 24px 20px;
+    }
+
+    .allocation-section {
+        padding: 28px 24px;
     }
 
     .allocation-content {
         flex-direction: column;
-        gap: 24px;
+        gap: 32px;
+        align-items: center;
     }
 
     .allocation-legend {
         grid-template-columns: repeat(2, 1fr);
+        width: 100%;
     }
 
     /* Table horizontal scroll */
     .table-wrapper {
         overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
     }
 
     .holdings-table,
     .assets-table {
         min-width: 900px;
+    }
+
+    .holdings-section,
+    .assets-section {
+        padding: 28px 24px;
     }
 }
 
@@ -288,65 +319,178 @@
     /* Sidebar becomes drawer */
     .portfolio-sidebar {
         position: fixed;
-        top: 80px;
+        top: 0;
         left: -100%;
-        width: 280px;
-        height: calc(100vh - 80px);
-        z-index: 1000;
-        transition: left 0.3s ease;
-        box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+        width: 85%;
+        max-width: 340px;
+        height: 100vh;
+        z-index: 1002;
+        transition: left 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: 4px 0 40px rgba(0, 0, 0, 0.3);
+        overflow-y: auto;
     }
 
     .portfolio-sidebar.open {
         left: 0;
+        animation: slideInBounce 0.5s cubic-bezier(0.68, -0.55, 0.27, 1.55);
     }
 
-    /* Sidebar toggle button */
+    @keyframes slideInBounce {
+        0% {
+            left: -100%;
+        }
+        70% {
+            left: 2%;
+        }
+        100% {
+            left: 0;
+        }
+    }
+
+    /* Portfolio Sidebar Backdrop */
+    .portfolio-sidebar-backdrop {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.6);
+        backdrop-filter: blur(8px);
+        z-index: 1001;
+        opacity: 0;
+        visibility: hidden;
+        transition: all 0.4s ease;
+    }
+
+    .portfolio-sidebar-backdrop.open {
+        opacity: 1;
+        visibility: visible;
+    }
+
+    /* Enhanced Sidebar toggle button */
     .sidebar-toggle {
-        display: block;
+        display: flex;
+        flex-direction: column;
         position: fixed;
         top: 90px;
         left: 16px;
         z-index: 1001;
-        width: 44px;
-        height: 44px;
-        background-color: var(--bg-primary);
-        border: 1px solid var(--border-color);
-        border-radius: 8px;
+        width: 56px;
+        height: 60px;
+        padding: 8px;
+        background: linear-gradient(135deg,
+            rgba(22, 199, 132, 0.15),
+            rgba(59, 130, 246, 0.15));
+        backdrop-filter: blur(20px);
+        border: 2px solid rgba(22, 199, 132, 0.3);
+        border-radius: 16px;
         cursor: pointer;
-        display: flex;
         align-items: center;
         justify-content: center;
+        box-shadow:
+            0 8px 32px rgba(22, 199, 132, 0.3),
+            0 0 0 4px rgba(22, 199, 132, 0.1);
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        animation: pulseGlow 2s ease-in-out infinite;
+        gap: 4px;
+    }
+
+    @keyframes pulseGlow {
+        0%, 100% {
+            box-shadow:
+                0 8px 32px rgba(22, 199, 132, 0.3),
+                0 0 0 4px rgba(22, 199, 132, 0.1);
+        }
+        50% {
+            box-shadow:
+                0 8px 40px rgba(22, 199, 132, 0.5),
+                0 0 0 6px rgba(22, 199, 132, 0.2);
+        }
+    }
+
+    .sidebar-toggle:hover {
+        transform: scale(1.1) translateY(-2px);
+        background: linear-gradient(135deg,
+            rgba(22, 199, 132, 0.25),
+            rgba(59, 130, 246, 0.25));
+        border-color: var(--primary-color);
+        animation: none;
+    }
+
+    .sidebar-toggle:active {
+        transform: scale(0.95);
+    }
+
+    .sidebar-toggle-hint {
+        font-size: 10px;
+        font-weight: 700;
+        color: var(--primary-color);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        line-height: 1;
     }
 
     .hamburger {
-        width: 20px;
+        width: 22px;
         height: 2px;
-        background-color: var(--text-primary);
+        background: linear-gradient(90deg, var(--primary-color), var(--blue));
         position: relative;
+        border-radius: 2px;
+        transition: all 0.3s ease;
     }
 
     .hamburger::before,
     .hamburger::after {
         content: '';
         position: absolute;
-        width: 20px;
+        width: 22px;
         height: 2px;
-        background-color: var(--text-primary);
+        background: linear-gradient(90deg, var(--primary-color), var(--blue));
         left: 0;
+        border-radius: 2px;
+        transition: all 0.3s ease;
     }
 
     .hamburger::before {
-        top: -6px;
+        top: -7px;
     }
 
     .hamburger::after {
-        bottom: -6px;
+        bottom: -7px;
+    }
+
+    /* Hamburger animation when sidebar is open */
+    .portfolio-sidebar.open + .portfolio-content .sidebar-toggle .hamburger {
+        background: transparent;
+    }
+
+    .portfolio-sidebar.open + .portfolio-content .sidebar-toggle .hamburger::before {
+        transform: rotate(45deg);
+        top: 0;
+    }
+
+    .portfolio-sidebar.open + .portfolio-content .sidebar-toggle .hamburger::after {
+        transform: rotate(-45deg);
+        bottom: 0;
+    }
+
+    /* Hide toggle hint when open */
+    .portfolio-sidebar.open + .portfolio-content .sidebar-toggle .sidebar-toggle-hint {
+        opacity: 0;
+    }
+
+    /* Change toggle button appearance when open */
+    .portfolio-sidebar.open + .portfolio-content .sidebar-toggle {
+        animation: none;
+        background: linear-gradient(135deg,
+            rgba(234, 57, 67, 0.2),
+            rgba(255, 77, 77, 0.2));
+        border-color: rgba(234, 57, 67, 0.5);
+        box-shadow:
+            0 8px 32px rgba(234, 57, 67, 0.3),
+            0 0 0 4px rgba(234, 57, 67, 0.1);
     }
 
     /* Portfolio content */
     .portfolio-content {
-        padding: 24px 16px;
+        padding: 20px 16px;
         padding-top: 70px;
     }
 
@@ -354,53 +498,194 @@
     .portfolio-header,
     .wallet-header {
         flex-direction: column;
-        gap: 20px;
-        padding: 20px 16px;
+        gap: 24px;
+        padding: 28px 24px;
+        border-radius: 24px;
+        margin-bottom: 24px;
+        background: linear-gradient(135deg,
+            rgba(22, 199, 132, 0.08) 0%,
+            var(--bg-primary) 40%,
+            rgba(59, 130, 246, 0.08) 100%);
+        box-shadow:
+            0 12px 48px rgba(0, 0, 0, 0.15),
+            inset 0 0 0 1px rgba(255, 255, 255, 0.1);
     }
 
     .portfolio-actions,
     .wallet-actions {
         width: 100%;
         flex-wrap: wrap;
+        gap: 12px;
     }
 
     .portfolio-total-value,
     .wallet-total-value {
-        font-size: 28px;
+        font-size: 40px;
+        letter-spacing: -1.5px;
+        margin-bottom: 8px;
+    }
+
+    .portfolio-change,
+    .wallet-change {
+        font-size: 16px;
+        padding: 12px 18px;
+        border-radius: 12px;
+        font-weight: 700;
     }
 
     /* Stats grid - 1 column */
     .stats-grid {
         grid-template-columns: 1fr;
-        gap: 12px;
+        gap: 16px;
+        animation: fadeInUp 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
     }
 
     .stat-card {
-        padding: 16px;
+        padding: 24px 20px;
+        background: linear-gradient(135deg,
+            rgba(255, 255, 255, 0.08) 0%,
+            rgba(255, 255, 255, 0.04) 100%);
+        backdrop-filter: blur(20px);
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        box-shadow:
+            0 8px 32px rgba(0, 0, 0, 0.12),
+            inset 0 0 0 1px rgba(255, 255, 255, 0.05);
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .stat-card:active {
+        transform: scale(0.98);
+    }
+
+    .stat-label {
+        font-size: 12px;
+        margin-bottom: 12px;
+        font-weight: 700;
+        letter-spacing: 0.5px;
+    }
+
+    .stat-value {
+        font-size: 28px;
+        font-weight: 900;
+        letter-spacing: -0.5px;
     }
 
     /* Allocation */
     .allocation-section {
-        padding: 20px 16px;
+        padding: 28px 24px;
+        border-radius: 24px;
+        background: linear-gradient(135deg,
+            rgba(59, 130, 246, 0.05) 0%,
+            var(--bg-primary) 30%,
+            rgba(22, 199, 132, 0.05) 100%);
+        box-shadow:
+            0 12px 40px rgba(0, 0, 0, 0.12),
+            inset 0 0 0 1px rgba(255, 255, 255, 0.08);
+    }
+
+    .allocation-header h2 {
+        font-size: 20px;
+        font-weight: 800;
     }
 
     .allocation-content {
         flex-direction: column;
-        gap: 24px;
+        gap: 32px;
     }
 
     .allocation-chart-wrapper {
         margin: 0 auto;
+        padding: 20px;
+        background: radial-gradient(circle,
+            rgba(22, 199, 132, 0.08) 0%,
+            transparent 70%);
+        border-radius: 50%;
     }
 
     .allocation-chart-wrapper canvas {
-        width: 250px !important;
-        height: 250px !important;
+        width: 280px !important;
+        height: 280px !important;
+        filter: drop-shadow(0 12px 32px rgba(0, 0, 0, 0.2));
+    }
+
+    .chart-center-value {
+        font-size: 32px;
+        font-weight: 900;
+    }
+
+    .chart-center-label {
+        font-size: 12px;
+        font-weight: 700;
     }
 
     .allocation-legend {
         grid-template-columns: 1fr;
         gap: 12px;
+        width: 100%;
+    }
+
+    .legend-item {
+        padding: 16px 18px;
+        border-radius: 16px;
+        background: linear-gradient(135deg,
+            rgba(255, 255, 255, 0.08) 0%,
+            rgba(255, 255, 255, 0.04) 100%);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .legend-item:active {
+        transform: scale(0.98);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    }
+
+    /* Holdings and Assets sections */
+    .holdings-section,
+    .assets-section {
+        padding: 28px 24px;
+        border-radius: 24px;
+        background: linear-gradient(135deg,
+            rgba(22, 199, 132, 0.05) 0%,
+            var(--bg-primary) 30%,
+            rgba(59, 130, 246, 0.05) 100%);
+        box-shadow:
+            0 12px 40px rgba(0, 0, 0, 0.12),
+            inset 0 0 0 1px rgba(255, 255, 255, 0.08);
+    }
+
+    .holdings-section h2,
+    .assets-section h2 {
+        font-size: 20px;
+        margin-bottom: 24px;
+        font-weight: 800;
+        position: relative;
+        padding-left: 16px;
+    }
+
+    .holdings-section h2::before,
+    .assets-section h2::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 4px;
+        height: 24px;
+        background: linear-gradient(180deg, var(--primary-color), var(--blue));
+        border-radius: 2px;
     }
 
     /* Tables become cards on mobile */
@@ -413,87 +698,305 @@
         display: block;
     }
 
-    /* Holdings cards */
+    /* Enhanced Holdings cards */
     .holding-card,
     .asset-card {
-        background-color: var(--bg-secondary);
-        border-radius: 12px;
-        padding: 16px;
-        margin-bottom: 12px;
+        background: linear-gradient(135deg,
+            rgba(22, 199, 132, 0.08) 0%,
+            rgba(59, 130, 246, 0.08) 100%);
+        backdrop-filter: blur(20px);
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        border-radius: 20px;
+        padding: 20px;
+        margin-bottom: 16px;
+        box-shadow:
+            0 8px 32px rgba(0, 0, 0, 0.12),
+            inset 0 0 0 1px rgba(255, 255, 255, 0.05);
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
+        overflow: hidden;
+        animation: slideInUp 0.5s cubic-bezier(0.4, 0, 0.2, 1) backwards;
+    }
+
+    @keyframes slideInUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .holding-card:nth-child(1),
+    .asset-card:nth-child(1) {
+        animation-delay: 0.05s;
+    }
+
+    .holding-card:nth-child(2),
+    .asset-card:nth-child(2) {
+        animation-delay: 0.1s;
+    }
+
+    .holding-card:nth-child(3),
+    .asset-card:nth-child(3) {
+        animation-delay: 0.15s;
+    }
+
+    .holding-card:nth-child(4),
+    .asset-card:nth-child(4) {
+        animation-delay: 0.2s;
+    }
+
+    .holding-card:nth-child(n+5),
+    .asset-card:nth-child(n+5) {
+        animation-delay: 0.25s;
+    }
+
+    .holding-card::before,
+    .asset-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: linear-gradient(90deg,
+            transparent,
+            var(--primary-color),
+            var(--blue),
+            transparent);
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+
+    .holding-card:active,
+    .asset-card:active {
+        transform: scale(0.97);
+        box-shadow:
+            0 4px 16px rgba(0, 0, 0, 0.1),
+            inset 0 0 0 1px rgba(255, 255, 255, 0.08);
+    }
+
+    .holding-card:active::before,
+    .asset-card:active::before {
+        opacity: 1;
     }
 
     .holding-card-header,
     .asset-card-header {
         display: flex;
         align-items: center;
-        gap: 12px;
-        margin-bottom: 16px;
+        gap: 14px;
+        margin-bottom: 18px;
+        padding-bottom: 16px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
     }
 
     .holding-card-body,
     .asset-card-body {
         display: grid;
         grid-template-columns: 1fr 1fr;
-        gap: 12px;
+        gap: 14px;
     }
 
     .card-field {
         display: flex;
         flex-direction: column;
-        gap: 4px;
+        gap: 6px;
     }
 
     .card-field-label {
         font-size: 11px;
         color: var(--text-secondary);
         text-transform: uppercase;
+        font-weight: 700;
+        letter-spacing: 0.5px;
     }
 
     .card-field-value {
-        font-size: 14px;
-        font-weight: 600;
+        font-size: 15px;
+        font-weight: 700;
         color: var(--text-primary);
     }
 
     /* Buttons in mobile */
     .btn-primary,
     .btn-secondary {
-        font-size: 13px;
-        padding: 10px 16px;
+        font-size: 15px;
+        padding: 14px 24px;
+        border-radius: 14px;
+        flex: 1;
+        min-width: 140px;
+        font-weight: 700;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .btn-primary:active,
+    .btn-secondary:active {
+        transform: scale(0.95);
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .toggle-switch {
+        padding: 6px 10px;
     }
 
     .toggle-label {
         font-size: 13px;
     }
+
+    .toggle-slider {
+        width: 44px;
+        height: 24px;
+    }
+
+    .toggle-slider::before {
+        width: 18px;
+        height: 18px;
+    }
+
+    .toggle-switch input:checked + .toggle-slider::before {
+        transform: translateX(20px);
+    }
+
+    /* Sidebar adjustments for mobile */
+    .sidebar-item {
+        padding: 18px 20px;
+        margin-bottom: 20px;
+    }
+
+    .sidebar-value {
+        font-size: 18px;
+    }
+
+    .wallet-item {
+        padding: 12px 16px;
+    }
+
+    .wallet-name {
+        font-size: 13px;
+    }
+
+    .wallet-value {
+        font-size: 12px;
+    }
 }
 
 /* Mobile Small - Portfolio (max-width: 480px) */
 @media (max-width: 480px) {
+    .portfolio-content {
+        padding: 16px 12px;
+        padding-top: 70px;
+    }
+
+    .portfolio-header,
+    .wallet-header {
+        padding: 20px 16px;
+    }
+
     .portfolio-total-value,
     .wallet-total-value {
-        font-size: 24px;
+        font-size: 32px;
+        letter-spacing: -1px;
     }
 
     .portfolio-change,
     .wallet-change {
         font-size: 14px;
+        padding: 8px 14px;
+    }
+
+    .portfolio-actions,
+    .wallet-actions {
+        gap: 10px;
+    }
+
+    .btn-primary,
+    .btn-secondary {
+        font-size: 13px;
+        padding: 10px 16px;
+        min-width: 100px;
+    }
+
+    .stat-card {
+        padding: 18px;
     }
 
     .stat-value {
-        font-size: 20px;
+        font-size: 22px;
+    }
+
+    .allocation-section,
+    .holdings-section,
+    .assets-section {
+        padding: 20px 16px;
+    }
+
+    .allocation-chart-wrapper {
+        padding: 12px;
     }
 
     .allocation-chart-wrapper canvas {
-        width: 220px !important;
-        height: 220px !important;
+        width: 240px !important;
+        height: 240px !important;
+    }
+
+    .chart-center-value {
+        font-size: 24px;
+    }
+
+    .legend-item {
+        padding: 12px;
+    }
+
+    .holding-card,
+    .asset-card {
+        padding: 16px;
+    }
+
+    .card-field-value {
+        font-size: 14px;
+    }
+
+    /* Sidebar */
+    .sidebar-content {
+        padding: 24px 18px;
+    }
+
+    .sidebar-item {
+        padding: 16px 18px;
     }
 
     .sidebar-value {
-        font-size: 16px;
+        font-size: 17px;
+    }
+
+    .sidebar-icon {
+        font-size: 24px;
+    }
+
+    .wallet-item {
+        padding: 11px 14px;
+    }
+
+    .wallet-icon {
+        font-size: 22px;
+    }
+
+    .wallet-name {
+        font-size: 12px;
     }
 
     .wallet-value {
-        font-size: 12px;
+        font-size: 11px;
+    }
+
+    .btn-create-portfolio {
+        padding: 12px 18px;
+        font-size: 13px;
     }
 }
 
@@ -509,5 +1012,48 @@
     .crypto-table th:nth-child(10),
     .crypto-table td:nth-child(10) {
         display: none;
+    }
+}
+
+/* Accessibility: Reduce motion for users who prefer it */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
+
+    .portfolio-sidebar,
+    .portfolio-sidebar-backdrop,
+    .mobile-nav-drawer,
+    .mobile-nav-backdrop {
+        transition: none !important;
+        animation: none !important;
+    }
+}
+
+/* Performance optimizations for mobile */
+@media (max-width: 768px) {
+    /* GPU acceleration for animated elements */
+    .portfolio-sidebar,
+    .portfolio-header,
+    .wallet-header,
+    .stat-card,
+    .holding-card,
+    .asset-card,
+    .legend-item,
+    .sidebar-toggle,
+    .allocation-chart-wrapper canvas {
+        will-change: transform;
+    }
+
+    /* Remove will-change after animation */
+    .portfolio-sidebar:not(.open),
+    .holding-card,
+    .asset-card {
+        will-change: auto;
     }
 }

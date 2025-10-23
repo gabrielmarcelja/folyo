@@ -264,10 +264,71 @@ const Portfolio = {
 
         // Sidebar toggle for mobile
         const sidebarToggle = document.getElementById('sidebar-toggle');
-        if (sidebarToggle) {
+        const sidebar = document.getElementById('portfolio-sidebar');
+        const backdrop = document.getElementById('portfolio-sidebar-backdrop');
+
+        if (sidebarToggle && sidebar && backdrop) {
+            // Toggle sidebar
             sidebarToggle.addEventListener('click', () => {
-                document.getElementById('portfolio-sidebar').classList.toggle('open');
+                const isOpen = sidebar.classList.contains('open');
+
+                if (isOpen) {
+                    this.closeSidebar();
+                } else {
+                    this.openSidebar();
+                }
             });
+
+            // Close sidebar on backdrop click
+            backdrop.addEventListener('click', () => {
+                this.closeSidebar();
+            });
+
+            // Close sidebar when selecting a wallet/view
+            document.querySelectorAll('.sidebar-item, .wallet-item').forEach(item => {
+                const originalClick = item.onclick;
+                item.addEventListener('click', () => {
+                    // Close sidebar on mobile after selection
+                    if (window.innerWidth <= 768) {
+                        setTimeout(() => this.closeSidebar(), 300);
+                    }
+                });
+            });
+
+            // Close on ESC key
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape' && sidebar.classList.contains('open')) {
+                    this.closeSidebar();
+                }
+            });
+        }
+    },
+
+    /**
+     * Open sidebar (mobile)
+     */
+    openSidebar() {
+        const sidebar = document.getElementById('portfolio-sidebar');
+        const backdrop = document.getElementById('portfolio-sidebar-backdrop');
+
+        if (sidebar && backdrop) {
+            sidebar.classList.add('open');
+            backdrop.classList.add('open');
+            document.body.style.overflow = 'hidden';
+        }
+    },
+
+    /**
+     * Close sidebar (mobile)
+     */
+    closeSidebar() {
+        const sidebar = document.getElementById('portfolio-sidebar');
+        const backdrop = document.getElementById('portfolio-sidebar-backdrop');
+
+        if (sidebar && backdrop) {
+            sidebar.classList.remove('open');
+            backdrop.classList.remove('open');
+            document.body.style.overflow = '';
         }
     },
 
@@ -498,6 +559,53 @@ const Portfolio = {
                 </tr>
             `;
         }).join('');
+
+        // Render mobile cards
+        this.renderHoldingsCards(holdings);
+    },
+
+    /**
+     * Render holdings cards for mobile
+     * @param {array} holdings
+     */
+    renderHoldingsCards(holdings) {
+        const container = document.getElementById('holdings-cards');
+        if (!container) return;
+
+        container.innerHTML = holdings.map(asset => {
+            const change24hClass = asset.change24h >= 0 ? 'change-positive' : 'change-negative';
+            const arrow24h = asset.change24h >= 0 ? '▲' : '▼';
+
+            return `
+                <div class="holding-card">
+                    <div class="holding-card-header">
+                        <img src="${asset.logo}" alt="${asset.symbol}" class="asset-logo">
+                        <div class="asset-info">
+                            <div class="asset-name">${asset.name}</div>
+                            <div class="asset-symbol">${asset.symbol}</div>
+                        </div>
+                    </div>
+                    <div class="holding-card-body">
+                        <div class="card-field">
+                            <span class="card-field-label">Price</span>
+                            <span class="card-field-value">$${asset.price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 4 })}</span>
+                        </div>
+                        <div class="card-field">
+                            <span class="card-field-label">24h Change</span>
+                            <span class="card-field-value ${change24hClass}">${arrow24h} ${Math.abs(asset.change24h)}%</span>
+                        </div>
+                        <div class="card-field">
+                            <span class="card-field-label">Balance</span>
+                            <span class="card-field-value">${asset.balance.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 4 })}</span>
+                        </div>
+                        <div class="card-field">
+                            <span class="card-field-label">Value</span>
+                            <span class="card-field-value">$${asset.value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }).join('');
     },
 
     /**
@@ -549,6 +657,55 @@ const Portfolio = {
                         <button class="table-action-btn">+ •••</button>
                     </td>
                 </tr>
+            `;
+        }).join('');
+
+        // Render mobile cards
+        this.renderAssetsCards(assets);
+    },
+
+    /**
+     * Render assets cards for mobile
+     * @param {array} assets
+     */
+    renderAssetsCards(assets) {
+        const container = document.getElementById('assets-cards');
+        if (!container) return;
+
+        container.innerHTML = assets.map(asset => {
+            const change24hClass = asset.change24h >= 0 ? 'change-positive' : 'change-negative';
+            const arrow24h = asset.change24h >= 0 ? '▲' : '▼';
+            const profitLossClass = asset.profitLoss >= 0 ? 'change-positive' : 'change-negative';
+            const profitLossSign = asset.profitLoss >= 0 ? '+' : '';
+
+            return `
+                <div class="asset-card">
+                    <div class="asset-card-header">
+                        <img src="${asset.logo}" alt="${asset.symbol}" class="asset-logo">
+                        <div class="asset-info">
+                            <div class="asset-name">${asset.name}</div>
+                            <div class="asset-symbol">${asset.symbol}</div>
+                        </div>
+                    </div>
+                    <div class="asset-card-body">
+                        <div class="card-field">
+                            <span class="card-field-label">Price</span>
+                            <span class="card-field-value">$${asset.price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 4 })}</span>
+                        </div>
+                        <div class="card-field">
+                            <span class="card-field-label">24h Change</span>
+                            <span class="card-field-value ${change24hClass}">${arrow24h} ${Math.abs(asset.change24h)}%</span>
+                        </div>
+                        <div class="card-field">
+                            <span class="card-field-label">Holdings</span>
+                            <span class="card-field-value">$${asset.holdings.value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                        </div>
+                        <div class="card-field">
+                            <span class="card-field-label">Profit/Loss</span>
+                            <span class="card-field-value ${profitLossClass}">${profitLossSign}$${Math.abs(asset.profitLoss).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                        </div>
+                    </div>
+                </div>
             `;
         }).join('');
     }

@@ -1,9 +1,10 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" style="scroll-behavior: smooth;">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="description" content="Manage your cryptocurrency portfolio - Track holdings, profits, and allocation">
+    <meta name="theme-color" content="#16C784">
     <title>Portfolio | Folyo</title>
 
     <!-- Fonts -->
@@ -63,11 +64,6 @@
     <div class="portfolio-container">
         <!-- Sidebar -->
         <aside class="portfolio-sidebar" id="portfolio-sidebar">
-            <!-- Mobile Toggle -->
-            <button class="sidebar-toggle" id="sidebar-toggle" aria-label="Toggle sidebar">
-                <span class="hamburger"></span>
-            </button>
-
             <!-- Sidebar Content -->
             <div class="sidebar-content">
                 <!-- Overview Button -->
@@ -164,6 +160,12 @@
 
         <!-- Main Content -->
         <main class="portfolio-content">
+            <!-- Mobile Sidebar Toggle - Fixed Position -->
+            <button class="sidebar-toggle" id="sidebar-toggle" aria-label="Open portfolio menu">
+                <span class="hamburger"></span>
+                <span class="sidebar-toggle-hint">Menu</span>
+            </button>
+
             <!-- Overview View -->
             <div id="overview-view" class="portfolio-view active">
                 <!-- Header -->
@@ -333,6 +335,9 @@
             </div>
         </main>
     </div>
+
+    <!-- Portfolio Sidebar Backdrop -->
+    <div class="portfolio-sidebar-backdrop" id="portfolio-sidebar-backdrop"></div>
 
     <!-- JavaScript -->
     <script src="../js/config.js"></script>

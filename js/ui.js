@@ -605,3 +605,171 @@ const UI = {
         localStorage.setItem(CONFIG.STORAGE_KEYS.LAST_UPDATE, now.toISOString());
     }
 };
+
+/**
+ * Mobile Navigation Manager
+ */
+const MobileNav = {
+    drawer: null,
+    backdrop: null,
+    toggle: null,
+    closeBtn: null,
+
+    /**
+     * Initialize mobile navigation
+     */
+    init() {
+        this.drawer = document.getElementById('mobile-nav-drawer');
+        this.backdrop = document.getElementById('mobile-nav-backdrop');
+        this.toggle = document.getElementById('mobile-menu-toggle');
+        this.closeBtn = document.getElementById('mobile-nav-close');
+
+        if (!this.drawer || !this.backdrop || !this.toggle) return;
+
+        this.setupEventListeners();
+        this.syncCurrency();
+        this.syncTheme();
+    },
+
+    /**
+     * Setup event listeners
+     */
+    setupEventListeners() {
+        // Toggle button
+        this.toggle.addEventListener('click', () => this.open());
+
+        // Close button
+        this.closeBtn.addEventListener('click', () => this.close());
+
+        // Backdrop click
+        this.backdrop.addEventListener('click', () => this.close());
+
+        // Mobile currency selector
+        const mobileCurrencySelect = document.getElementById('mobile-currency-select');
+        if (mobileCurrencySelect) {
+            mobileCurrencySelect.addEventListener('change', (e) => {
+                CurrencyManager.setCurrency(e.target.value);
+                document.getElementById('currency-select').value = e.target.value;
+            });
+        }
+
+        // Mobile theme toggle
+        const mobileThemeToggle = document.getElementById('mobile-theme-toggle');
+        if (mobileThemeToggle) {
+            mobileThemeToggle.addEventListener('click', () => {
+                ThemeManager.toggle();
+                this.updateThemeButton();
+            });
+        }
+
+        // Mobile auth buttons
+        const mobileLoginBtn = document.querySelector('.mobile-btn-login');
+        const mobileSignupBtn = document.querySelector('.mobile-btn-signup');
+
+        if (mobileLoginBtn) {
+            mobileLoginBtn.addEventListener('click', () => {
+                this.close();
+                document.querySelector('.btn-login')?.click();
+            });
+        }
+
+        if (mobileSignupBtn) {
+            mobileSignupBtn.addEventListener('click', () => {
+                this.close();
+                document.querySelector('.btn-signup')?.click();
+            });
+        }
+
+        // Close on link click
+        document.querySelectorAll('.mobile-nav-link').forEach(link => {
+            link.addEventListener('click', () => {
+                // Allow navigation but close drawer
+                setTimeout(() => this.close(), 100);
+            });
+        });
+
+        // Prevent scroll when drawer is open
+        this.drawer.addEventListener('transitionend', (e) => {
+            if (e.propertyName === 'left' && this.drawer.classList.contains('open')) {
+                document.body.style.overflow = 'hidden';
+            }
+        });
+
+        // ESC key to close
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && this.drawer.classList.contains('open')) {
+                this.close();
+            }
+        });
+    },
+
+    /**
+     * Open mobile drawer
+     */
+    open() {
+        this.drawer.classList.add('open');
+        this.backdrop.classList.add('open');
+        document.body.style.overflow = 'hidden';
+    },
+
+    /**
+     * Close mobile drawer
+     */
+    close() {
+        this.drawer.classList.remove('open');
+        this.backdrop.classList.remove('open');
+        document.body.style.overflow = '';
+    },
+
+    /**
+     * Sync currency selector with main selector
+     */
+    syncCurrency() {
+        const mainSelect = document.getElementById('currency-select');
+        const mobileSelect = document.getElementById('mobile-currency-select');
+
+        if (mainSelect && mobileSelect) {
+            mobileSelect.value = mainSelect.value;
+
+            // Listen to main selector changes
+            mainSelect.addEventListener('change', (e) => {
+                mobileSelect.value = e.target.value;
+            });
+        }
+    },
+
+    /**
+     * Sync theme with main theme manager
+     */
+    syncTheme() {
+        this.updateThemeButton();
+    },
+
+    /**
+     * Update theme button text and icon
+     */
+    updateThemeButton() {
+        const themeBtn = document.getElementById('mobile-theme-toggle');
+        const themeIcon = themeBtn?.querySelector('.mobile-theme-icon');
+        const themeText = themeBtn?.querySelector('.mobile-theme-text');
+
+        if (!themeBtn) return;
+
+        const isDark = document.body.classList.contains('theme-dark');
+
+        if (themeIcon) {
+            themeIcon.textContent = isDark ? '☀️' : '🌙';
+        }
+
+        if (themeText) {
+            themeText.textContent = isDark ? 'Light Mode' : 'Dark Mode';
+        }
+    }
+};
+
+// Initialize mobile nav when DOM is ready
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => MobileNav.init());
+} else {
+    MobileNav.init();
+}
