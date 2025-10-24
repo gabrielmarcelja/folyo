@@ -1411,13 +1411,17 @@ input:focus-visible {
 }
 
 /* Enhanced Price Changes */
+.holdings-table td.change-positive,
+.assets-table td.change-positive,
 .change-positive {
-    color: var(--green);
+    color: var(--green) !important;
     font-weight: 700;
 }
 
+.holdings-table td.change-negative,
+.assets-table td.change-negative,
 .change-negative {
-    color: var(--red);
+    color: var(--red) !important;
     font-weight: 700;
 }
 
