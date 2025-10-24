@@ -499,7 +499,7 @@ const PortfolioManager = {
             const changeClass = changePercent >= 0 ? 'positive' : 'negative';
             const arrow = changePercent >= 0 ? '▲' : '▼';
             changeEl.className = 'wallet-change ' + changeClass;
-            changeEl.innerHTML = `${change >= 0 ? '+' : ''}$${Math.abs(change).toFixed(2)} <span class="arrow">${arrow}</span>${Math.abs(changePercent).toFixed(2)}% (P/L)`;
+            changeEl.innerHTML = `${change >= 0 ? '+' : ''}$${Math.abs(change).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} <span class="arrow">${arrow}</span>${Math.abs(changePercent).toFixed(2)}% (P/L)`;
         }
 
         // Update stats
