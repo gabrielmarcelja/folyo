@@ -73,11 +73,12 @@ const PortfolioManager = {
             const response = await APIClient.getAllUserHoldings();
 
             const holdingsData = response.holdings || response;
+            const summary = response.summary || null; // Extract summary from API
 
             this.allHoldings = holdingsData;
 
-            // Calculate overview statistics
-            const overview = this.calculateOverview(holdingsData);
+            // Calculate overview statistics (use API summary if available)
+            const overview = this.calculateOverview(holdingsData, summary);
 
             // Render overview
             this.renderOverview(overview);
@@ -293,9 +294,11 @@ const PortfolioManager = {
     /**
      * Calculate overview statistics from all holdings
      * @param {array} holdingsData
+     * @param {object} summary - Optional summary object from API with pre-calculated totals
      */
-    calculateOverview(holdingsData) {
+    calculateOverview(holdingsData, summary = null) {
         let totalValue = 0;
+        let totalCost = 0;
         let totalChange24h = 0;
         let allocationMap = new Map();
         let holdingsMap = new Map(); // Group by crypto to aggregate across portfolios
@@ -304,8 +307,10 @@ const PortfolioManager = {
         if (holdingsData && holdingsData.length > 0) {
             holdingsData.forEach((holding, index) => {
                 const currentValue = parseFloat(holding.current_value || 0);
+                const costBasis = parseFloat(holding.cost_basis || 0);
 
                 totalValue += currentValue;
+                totalCost += costBasis;
                 totalChange24h += parseFloat(holding.value_change_24h || 0);
 
                 // Group by crypto for allocation
@@ -362,8 +367,24 @@ const PortfolioManager = {
 
         const changePercent24h = totalValue > 0 ? (totalChange24h / totalValue * 100) : 0;
 
+        // Use summary from API if available (more reliable than recalculating)
+        let totalProfitLoss, totalProfitLossPercent;
+        if (summary) {
+            totalValue = parseFloat(summary.total_value || 0);
+            totalCost = parseFloat(summary.total_cost || 0);
+            totalProfitLoss = parseFloat(summary.total_profit_loss || 0);
+            totalProfitLossPercent = parseFloat(summary.total_profit_loss_percent || 0);
+        } else {
+            // Fallback: calculate manually
+            totalProfitLoss = totalValue - totalCost;
+            totalProfitLossPercent = totalCost > 0 ? (totalProfitLoss / totalCost * 100) : 0;
+        }
+
         return {
             totalValue,
+            totalCost,
+            totalProfitLoss,
+            totalProfitLossPercent,
             change24h: totalChange24h,
             changePercent24h,
             allocation: allocationFinal,
@@ -383,12 +404,18 @@ const PortfolioManager = {
             totalValueEl.textContent = formattedValue;
         }
 
-        const changeEl = document.querySelector('.portfolio-change');
-        if (changeEl) {
-            const changeClass = overview.changePercent24h >= 0 ? 'positive' : 'negative';
-            const arrow = overview.changePercent24h >= 0 ? '▲' : '▼';
-            changeEl.className = 'portfolio-change ' + changeClass;
-            changeEl.innerHTML = `${overview.change24h >= 0 ? '+' : ''}$${Math.abs(overview.change24h).toFixed(2)} <span class="arrow">${arrow}</span>${Math.abs(overview.changePercent24h).toFixed(2)}% (24h)`;
+        // Update overview stats (cost and P&L)
+        const totalCostEl = document.getElementById('overview-total-cost');
+        if (totalCostEl) {
+            totalCostEl.textContent = '$' + overview.totalCost.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        }
+
+        const totalPLEl = document.getElementById('overview-total-pl');
+        if (totalPLEl) {
+            const plClass = overview.totalProfitLoss >= 0 ? 'positive' : 'negative';
+            const plSign = overview.totalProfitLoss >= 0 ? '+' : '';
+            totalPLEl.className = `overview-stat-value ${plClass}`;
+            totalPLEl.textContent = `${plSign}$${Math.abs(overview.totalProfitLoss).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} (${plSign}${overview.totalProfitLossPercent.toFixed(2)}%)`;
         }
 
         // Update overview button value in sidebar

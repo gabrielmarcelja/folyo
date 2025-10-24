@@ -598,6 +598,55 @@ input:focus-visible {
     font-size: 14px;
 }
 
+.portfolio-change-label {
+    display: block;
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--text-secondary);
+    margin-top: 4px;
+    opacity: 0.7;
+    letter-spacing: 0.5px;
+}
+
+/* Overview Stats Section */
+.overview-stats {
+    display: flex;
+    gap: 24px;
+    margin: 24px 32px;
+    padding: 20px 24px;
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.overview-stat {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.overview-stat-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.overview-stat-value {
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.overview-stat-value.positive {
+    color: var(--green);
+}
+
+.overview-stat-value.negative {
+    color: var(--red);
+}
+
 .portfolio-actions,
 .wallet-actions {
     display: flex;
