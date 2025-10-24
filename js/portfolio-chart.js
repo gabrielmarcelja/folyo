@@ -21,6 +21,11 @@ class PortfolioChart {
         this.data = null;
         this.hoveredPointIndex = null;
 
+        // Bind event handlers to preserve 'this' context for cleanup
+        this.boundHandleMouseMove = (e) => this.handleMouseMove(e);
+        this.boundHandleMouseLeave = () => this.handleMouseLeave();
+        this.boundHandleResize = () => this.handleResize();
+
         // Colors
         this.colors = {
             profit: '#16C784',
@@ -64,9 +69,9 @@ class PortfolioChart {
      * Setup event listeners
      */
     setupEventListeners() {
-        this.canvas.addEventListener('mousemove', (e) => this.handleMouseMove(e));
-        this.canvas.addEventListener('mouseleave', () => this.handleMouseLeave());
-        window.addEventListener('resize', () => this.handleResize());
+        this.canvas.addEventListener('mousemove', this.boundHandleMouseMove);
+        this.canvas.addEventListener('mouseleave', this.boundHandleMouseLeave);
+        window.addEventListener('resize', this.boundHandleResize);
     }
 
     /**
@@ -83,6 +88,7 @@ class PortfolioChart {
             this.data = response;
 
             if (!response.points || response.points.length === 0) {
+                this.hideLoading();
                 this.showEmpty();
                 return;
             }
@@ -479,8 +485,18 @@ class PortfolioChart {
      * Destroy chart and clean up
      */
     destroy() {
-        this.canvas.removeEventListener('mousemove', this.handleMouseMove);
-        this.canvas.removeEventListener('mouseleave', this.handleMouseLeave);
-        window.removeEventListener('resize', this.handleResize);
+        this.canvas.removeEventListener('mousemove', this.boundHandleMouseMove);
+        this.canvas.removeEventListener('mouseleave', this.boundHandleMouseLeave);
+        window.removeEventListener('resize', this.boundHandleResize);
+
+        // Clear any pending timeouts
+        if (this.resizeTimeout) {
+            clearTimeout(this.resizeTimeout);
+        }
+
+        // Clear canvas
+        if (this.ctx) {
+            this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+        }
     }
 }

@@ -156,6 +156,7 @@ function getTransaction($transactionId) {
  * }
  */
 function createTransaction() {
+    requireCsrfToken(); // CSRF protection
     $userId = getCurrentUserId();
     $data = getJsonInput();
 
@@ -202,6 +203,27 @@ function createTransaction() {
 
     if ($data['total_amount'] < 0) {
         sendError('Total amount cannot be negative', 400);
+    }
+
+    // CRITICAL: Validate sell quantity against available balance
+    if ($data['transaction_type'] === 'sell') {
+        $availableBalance = getAvailableBalance(
+            $data['portfolio_id'],
+            $data['crypto_id'],
+            $data['transaction_date'] ?? date('Y-m-d H:i:s')
+        );
+
+        if ($data['quantity'] > $availableBalance) {
+            sendError(
+                sprintf(
+                    'Insufficient balance. You have %.8f %s available, but trying to sell %.8f',
+                    $availableBalance,
+                    $data['crypto_symbol'],
+                    $data['quantity']
+                ),
+                400
+            );
+        }
     }
 
     // Parse transaction date
@@ -258,6 +280,7 @@ function createTransaction() {
  * PUT /api/transactions.php?id={id}
  */
 function updateTransaction($transactionId) {
+    requireCsrfToken(); // CSRF protection
     $userId = getCurrentUserId();
     $data = getJsonInput();
 
@@ -275,6 +298,13 @@ function updateTransaction($transactionId) {
 
     $updates = [];
     $params = [];
+
+    // Get current transaction data
+    $currentTransaction = queryOne('
+        SELECT transaction_type, crypto_id, crypto_symbol, quantity, transaction_date
+        FROM transactions
+        WHERE id = ?
+    ', [$transactionId]);
 
     // Build update query dynamically
     $fields = [
@@ -302,6 +332,38 @@ function updateTransaction($transactionId) {
         sendError('No fields to update', 400);
     }
 
+    // CRITICAL: Validate sell quantity if updating a sell transaction
+    $newType = $data['transaction_type'] ?? $currentTransaction['transaction_type'];
+    $newQuantity = $data['quantity'] ?? $currentTransaction['quantity'];
+    $newCryptoId = $data['crypto_id'] ?? $currentTransaction['crypto_id'];
+    $newCryptoSymbol = $data['crypto_symbol'] ?? $currentTransaction['crypto_symbol'];
+    $newDate = $data['transaction_date'] ?? $currentTransaction['transaction_date'];
+
+    if ($newType === 'sell') {
+        // Get current portfolio from existing transaction
+        $portfolio = queryOne('SELECT portfolio_id FROM transactions WHERE id = ?', [$transactionId]);
+
+        // Calculate available balance EXCLUDING this transaction
+        $availableBalance = getAvailableBalanceExcludingTransaction(
+            $portfolio['portfolio_id'],
+            $newCryptoId,
+            $newDate,
+            $transactionId
+        );
+
+        if ($newQuantity > $availableBalance) {
+            sendError(
+                sprintf(
+                    'Insufficient balance. You have %.8f %s available, but trying to sell %.8f',
+                    $availableBalance,
+                    $newCryptoSymbol,
+                    $newQuantity
+                ),
+                400
+            );
+        }
+    }
+
     // Add transaction ID to params
     $params[] = $transactionId;
 
@@ -323,6 +385,7 @@ function updateTransaction($transactionId) {
  * DELETE /api/transactions.php?id={id}
  */
 function deleteTransaction($transactionId) {
+    requireCsrfToken(); // CSRF protection
     $userId = getCurrentUserId();
 
     // Verify transaction exists and belongs to user
@@ -344,4 +407,56 @@ function deleteTransaction($transactionId) {
         'message' => 'Transaction deleted successfully',
         'deleted_transaction' => $transaction
     ]);
+}
+
+/**
+ * Get available balance for a crypto in a portfolio at a specific date
+ * @param int $portfolioId Portfolio ID
+ * @param int $cryptoId Crypto ID
+ * @param string $date Date up to which to calculate (ISO format)
+ * @return float Available balance
+ */
+function getAvailableBalance($portfolioId, $cryptoId, $date) {
+    $sql = '
+        SELECT
+            COALESCE(SUM(CASE
+                WHEN transaction_type = "buy" THEN quantity
+                WHEN transaction_type = "sell" THEN -quantity
+            END), 0) as available_balance
+        FROM transactions
+        WHERE portfolio_id = ?
+            AND crypto_id = ?
+            AND transaction_date <= ?
+    ';
+
+    $result = queryOne($sql, [$portfolioId, $cryptoId, $date]);
+
+    return floatval($result['available_balance'] ?? 0);
+}
+
+/**
+ * Get available balance excluding a specific transaction (for updates)
+ * @param int $portfolioId Portfolio ID
+ * @param int $cryptoId Crypto ID
+ * @param string $date Date up to which to calculate (ISO format)
+ * @param int $excludeTransactionId Transaction ID to exclude
+ * @return float Available balance
+ */
+function getAvailableBalanceExcludingTransaction($portfolioId, $cryptoId, $date, $excludeTransactionId) {
+    $sql = '
+        SELECT
+            COALESCE(SUM(CASE
+                WHEN transaction_type = "buy" THEN quantity
+                WHEN transaction_type = "sell" THEN -quantity
+            END), 0) as available_balance
+        FROM transactions
+        WHERE portfolio_id = ?
+            AND crypto_id = ?
+            AND transaction_date <= ?
+            AND id != ?
+    ';
+
+    $result = queryOne($sql, [$portfolioId, $cryptoId, $date, $excludeTransactionId]);
+
+    return floatval($result['available_balance'] ?? 0);
 }

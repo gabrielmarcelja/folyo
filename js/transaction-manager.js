@@ -10,6 +10,15 @@ const TransactionManager = {
     searchTimeout: null,
     cryptoCache: null,
     isSubmitting: false,
+    eventController: null, // AbortController for event listeners
+    editingTransactionId: null, // ID of transaction being edited (null for new transaction)
+    allTransactions: [], // Store all transactions for filtering
+    filteredTransactions: [], // Store filtered transactions
+    filters: {
+        search: '',
+        type: 'all',
+        date: 'all'
+    },
 
     /**
      * Initialize transaction manager
@@ -17,59 +26,68 @@ const TransactionManager = {
     init() {
         this.transactionModal = document.getElementById('transaction-modal');
         this.setupEventListeners();
-        console.log('✅ Transaction Manager initialized');
+        Debug.log('✅ Transaction Manager initialized');
     },
 
     /**
      * Setup event listeners
      */
     setupEventListeners() {
+        // Clean up previous event listeners if they exist
+        if (this.eventController) {
+            this.eventController.abort();
+        }
+
+        // Create new AbortController
+        this.eventController = new AbortController();
+        const { signal } = this.eventController;
+
         // Transaction type tabs
         document.querySelectorAll('.transaction-tab').forEach(tab => {
-            tab.addEventListener('click', () => this.switchTransactionType(tab.dataset.type));
+            tab.addEventListener('click', () => this.switchTransactionType(tab.dataset.type), { signal });
         });
 
         // Crypto search
         const searchInput = document.getElementById('crypto-search');
         if (searchInput) {
-            searchInput.addEventListener('input', (e) => this.handleCryptoSearch(e.target.value));
+            searchInput.addEventListener('input', (e) => this.handleCryptoSearch(e.target.value), { signal });
             searchInput.addEventListener('focus', () => {
                 if (searchInput.value.trim()) {
                     this.showSearchResults();
                 }
-            });
+            }, { signal });
         }
 
         // Remove selected crypto
         const removeBtn = document.querySelector('.btn-remove-crypto');
         if (removeBtn) {
-            removeBtn.addEventListener('click', () => this.clearSelectedCrypto());
+            removeBtn.addEventListener('click', () => this.clearSelectedCrypto(), { signal });
         }
 
         // Date input change - validate and fetch price
         const dateInput = document.getElementById('transaction-date');
         if (dateInput) {
-            dateInput.addEventListener('change', () => this.handleDateChange());
+            dateInput.addEventListener('change', () => this.handleDateChange(), { signal });
         }
 
         // Auto-calculate total
         ['transaction-quantity', 'transaction-price', 'transaction-fee'].forEach(id => {
             const input = document.getElementById(id);
             if (input) {
-                input.addEventListener('input', () => this.calculateTotal());
+                input.addEventListener('input', () => this.calculateTotal(), { signal });
             }
         });
 
         // Form submission
         const form = document.getElementById('transaction-form');
         if (form) {
-            form.addEventListener('submit', (e) => this.handleSubmit(e));
+            form.addEventListener('submit', (e) => this.handleSubmit(e), { signal });
         }
 
         // Cancel button
         const cancelBtn = document.getElementById('cancel-transaction');
         if (cancelBtn) {
-            cancelBtn.addEventListener('click', () => this.closeModal());
+            cancelBtn.addEventListener('click', () => this.closeModal(), { signal });
         }
 
         // Close modal on backdrop click
@@ -78,7 +96,7 @@ const TransactionManager = {
                 if (e.target === this.transactionModal) {
                     this.closeModal();
                 }
-            });
+            }, { signal });
         }
 
         // Close on ESC key
@@ -86,12 +104,12 @@ const TransactionManager = {
             if (e.key === 'Escape' && this.transactionModal?.classList.contains('active')) {
                 this.closeModal();
             }
-        });
+        }, { signal });
 
         // Modal close button
         const closeBtn = this.transactionModal?.querySelector('.modal-close');
         if (closeBtn) {
-            closeBtn.addEventListener('click', () => this.closeModal());
+            closeBtn.addEventListener('click', () => this.closeModal(), { signal });
         }
 
         // Add Transaction button (use specific ID)
@@ -100,14 +118,14 @@ const TransactionManager = {
 
         if (addTransactionBtn) {
             addTransactionBtn.addEventListener('click', () => {
-                console.log('Add Transaction clicked, currentPortfolio:', PortfolioManager.currentPortfolio);
+                Debug.log('Add Transaction clicked, currentPortfolio:', PortfolioManager.currentPortfolio);
                 if (PortfolioManager.currentPortfolio) {
                     this.showModal(PortfolioManager.currentPortfolio);
                 } else {
-                    console.error('No portfolio selected!');
+                    Debug.error('No portfolio selected!');
                     AuthManager.showMessage('Please select a portfolio first', 'error');
                 }
-            });
+            }, { signal });
         }
 
         // Also handle any other Add Transaction buttons (but NOT the submit button!)
@@ -119,37 +137,147 @@ const TransactionManager = {
                     if (PortfolioManager.currentPortfolio) {
                         this.showModal(PortfolioManager.currentPortfolio);
                     }
-                });
+                }, { signal });
             }
         });
+
+        // Transaction filters
+        const transactionSearchInput = document.getElementById('transaction-search');
+        if (transactionSearchInput) {
+            transactionSearchInput.addEventListener('input', (e) => {
+                this.filters.search = e.target.value.toLowerCase();
+                this.applyFilters();
+                this.updateClearButtonVisibility();
+            }, { signal });
+        }
+
+        const typeFilter = document.getElementById('transaction-type-filter');
+        if (typeFilter) {
+            typeFilter.addEventListener('change', (e) => {
+                this.filters.type = e.target.value;
+                this.applyFilters();
+                this.updateClearButtonVisibility();
+            }, { signal });
+        }
+
+        const dateFilter = document.getElementById('transaction-date-filter');
+        if (dateFilter) {
+            dateFilter.addEventListener('change', (e) => {
+                this.filters.date = e.target.value;
+                this.applyFilters();
+                this.updateClearButtonVisibility();
+            }, { signal });
+        }
+
+        const clearFiltersBtn = document.getElementById('clear-filters');
+        if (clearFiltersBtn) {
+            clearFiltersBtn.addEventListener('click', () => this.clearFilters(), { signal });
+        }
     },
 
     /**
      * Show transaction modal
      * @param {number} portfolioId
+     * @param {object|null} transaction - Transaction data for edit mode (null for create mode)
      */
-    showModal(portfolioId) {
-        console.log('📂 showModal() CALLED - portfolioId:', portfolioId);
+    showModal(portfolioId, transaction = null) {
+        Debug.log('📂 showModal() CALLED - portfolioId:', portfolioId, 'transaction:', transaction);
         this.currentPortfolioId = portfolioId;
-        this.clearSelectedCrypto();
-        this.resetForm();
 
-        // Set current date/time as default
-        const now = new Date();
-        const localDateTime = new Date(now.getTime() - now.getTimezoneOffset() * 60000)
-            .toISOString()
-            .slice(0, 16);
-        document.getElementById('transaction-date').value = localDateTime;
+        // If no transaction provided, we're in create mode
+        if (!transaction) {
+            this.editingTransactionId = null;
+            this.clearSelectedCrypto();
+            this.resetForm();
+
+            // Set current date/time as default
+            const now = new Date();
+            const localDateTime = new Date(now.getTime() - now.getTimezoneOffset() * 60000)
+                .toISOString()
+                .slice(0, 16);
+            document.getElementById('transaction-date').value = localDateTime;
+
+            // Update modal title and button
+            this.updateModalForMode('create');
+        } else {
+            // Edit mode - populate form with transaction data
+            this.resetForm();
+            this.populateFormWithTransaction(transaction);
+
+            // Update modal title and button
+            this.updateModalForMode('edit');
+        }
 
         // Show modal
         if (this.transactionModal) {
             this.transactionModal.classList.add('active');
             document.body.classList.add('modal-open');
 
-            // Focus on search input
+            // Focus appropriately
             setTimeout(() => {
-                document.getElementById('crypto-search')?.focus();
+                if (transaction) {
+                    // In edit mode, focus on quantity field
+                    document.getElementById('transaction-quantity')?.focus();
+                } else {
+                    // In create mode, focus on search
+                    document.getElementById('crypto-search')?.focus();
+                }
             }, 100);
+        }
+    },
+
+    /**
+     * Populate form with transaction data (for edit mode)
+     * @param {object} transaction
+     */
+    populateFormWithTransaction(transaction) {
+        // Set transaction type
+        this.switchTransactionType(transaction.transaction_type);
+
+        // Select crypto (create a crypto object from transaction data)
+        const crypto = {
+            id: transaction.crypto_id,
+            name: transaction.crypto_name,
+            symbol: transaction.crypto_symbol,
+            quote: {
+                USD: {
+                    price: transaction.price_per_coin
+                }
+            }
+        };
+        this.selectCrypto(crypto);
+
+        // Set form fields
+        document.getElementById('transaction-quantity').value = parseFloat(transaction.quantity);
+        document.getElementById('transaction-price').value = parseFloat(transaction.price_per_coin);
+        document.getElementById('transaction-fee').value = parseFloat(transaction.fee);
+        document.getElementById('transaction-total').value = parseFloat(transaction.total_amount);
+        document.getElementById('transaction-notes').value = transaction.notes || '';
+
+        // Set transaction date (convert UTC to local)
+        const utcDate = new Date(transaction.transaction_date + 'Z'); // Add Z to indicate UTC
+        const localDateTime = new Date(utcDate.getTime() - utcDate.getTimezoneOffset() * 60000)
+            .toISOString()
+            .slice(0, 16);
+        document.getElementById('transaction-date').value = localDateTime;
+    },
+
+    /**
+     * Update modal UI based on mode (create or edit)
+     * @param {string} mode - 'create' or 'edit'
+     */
+    updateModalForMode(mode) {
+        const modalTitle = this.transactionModal?.querySelector('.modal-header h2');
+        const submitBtn = document.getElementById('submit-transaction');
+        const btnText = submitBtn?.querySelector('.btn-text');
+
+        if (mode === 'edit') {
+            if (modalTitle) modalTitle.textContent = 'Edit Transaction';
+            if (btnText) btnText.textContent = 'Update Transaction';
+        } else {
+            if (modalTitle) modalTitle.textContent = 'Add Transaction';
+            const transactionType = document.getElementById('transaction-type').value;
+            if (btnText) btnText.textContent = transactionType === 'buy' ? 'Buy Crypto' : 'Sell Crypto';
         }
     },
 
@@ -157,14 +285,15 @@ const TransactionManager = {
      * Close transaction modal
      */
     closeModal() {
-        console.log('📁 closeModal() CALLED');
+        Debug.log('📁 closeModal() CALLED');
         if (this.transactionModal) {
             this.transactionModal.classList.remove('active');
             document.body.classList.remove('modal-open');
         }
+        this.editingTransactionId = null; // Reset edit mode
         this.resetForm();
         this.clearSelectedCrypto();
-        console.log('📁 closeModal() COMPLETED');
+        Debug.log('📁 closeModal() COMPLETED');
     },
 
     /**
@@ -240,7 +369,7 @@ const TransactionManager = {
                 });
 
             } catch (error) {
-                console.error('Search error:', error);
+                Debug.error('Search error:', error);
                 resultsDiv.innerHTML = '<div class="crypto-search-empty">Error searching cryptocurrencies</div>';
             }
         }, 300);
@@ -272,7 +401,7 @@ const TransactionManager = {
      * @param {object} crypto
      */
     selectCrypto(crypto) {
-        console.log('🟢 selectCrypto() CALLED - crypto:', crypto);
+        Debug.log('🟢 selectCrypto() CALLED - crypto:', crypto);
         this.selectedCrypto = crypto;
 
         // Hide search input and results
@@ -289,8 +418,8 @@ const TransactionManager = {
         // Set hidden fields
         const hiddenField = document.getElementById('transaction-crypto-id');
         hiddenField.value = crypto.id;
-        console.log('🟢 selectCrypto() - Set hidden field value to:', hiddenField.value);
-        console.log('🟢 selectCrypto() - this.selectedCrypto is now:', this.selectedCrypto);
+        Debug.log('🟢 selectCrypto() - Set hidden field value to:', hiddenField.value);
+        Debug.log('🟢 selectCrypto() - this.selectedCrypto is now:', this.selectedCrypto);
 
         // Check date and set price if possible
         this.handleDateChange();
@@ -300,7 +429,7 @@ const TransactionManager = {
      * Clear selected cryptocurrency
      */
     clearSelectedCrypto() {
-        console.log('🔴 clearSelectedCrypto() CALLED');
+        Debug.log('🔴 clearSelectedCrypto() CALLED');
         console.trace('🔴 Call stack:');
         this.selectedCrypto = null;
         document.getElementById('crypto-search').style.display = 'block';
@@ -309,7 +438,7 @@ const TransactionManager = {
         document.getElementById('transaction-crypto-id').value = '';
         document.getElementById('transaction-price').value = '';
         document.getElementById('price-helper').textContent = '';
-        console.log('🔴 clearSelectedCrypto() - Crypto cleared, hidden field now:', document.getElementById('transaction-crypto-id').value);
+        Debug.log('🔴 clearSelectedCrypto() - Crypto cleared, hidden field now:', document.getElementById('transaction-crypto-id').value);
     },
 
     /**
@@ -374,7 +503,7 @@ const TransactionManager = {
 
                 this.calculateTotal();
             } catch (error) {
-                console.error('Error fetching price:', error);
+                Debug.error('Error fetching price:', error);
                 priceHelper.textContent = '⚠️ Could not fetch price automatically. Please enter manually.';
                 priceHelper.classList.add('warning');
                 priceInput.value = '';
@@ -406,27 +535,27 @@ const TransactionManager = {
      * @param {Event} e
      */
     async handleSubmit(e) {
-        console.log('🔵 handleSubmit() CALLED');
+        Debug.log('🔵 handleSubmit() CALLED');
         e.preventDefault();
-        console.log('🔵 handleSubmit() - preventDefault() called');
+        Debug.log('🔵 handleSubmit() - preventDefault() called');
 
         if (this.isSubmitting) {
-            console.log('🔵 handleSubmit() - Already submitting, returning');
+            Debug.log('🔵 handleSubmit() - Already submitting, returning');
             return;
         }
 
         // Validate crypto is selected
         const cryptoId = document.getElementById('transaction-crypto-id').value;
-        console.log('🔵 handleSubmit() - selectedCrypto:', this.selectedCrypto);
-        console.log('🔵 handleSubmit() - cryptoId hidden field value:', cryptoId);
+        Debug.log('🔵 handleSubmit() - selectedCrypto:', this.selectedCrypto);
+        Debug.log('🔵 handleSubmit() - cryptoId hidden field value:', cryptoId);
 
         if (!this.selectedCrypto || !cryptoId) {
-            console.log('🔵 handleSubmit() - VALIDATION FAILED - No crypto selected');
+            Debug.log('🔵 handleSubmit() - VALIDATION FAILED - No crypto selected');
             this.showError('Please select a cryptocurrency');
             return;
         }
 
-        console.log('🔵 handleSubmit() - Validation passed, proceeding with transaction...');
+        Debug.log('🔵 handleSubmit() - Validation passed, proceeding with transaction...');
 
         // Get form data
         const formData = {
@@ -459,11 +588,17 @@ const TransactionManager = {
             this.isSubmitting = true;
             this.showLoading(true);
 
-            // Submit to API
-            const result = await APIClient.createTransaction(formData);
+            // Check if we're editing or creating
+            if (this.editingTransactionId) {
+                // Update existing transaction
+                const result = await APIClient.updateTransaction(this.editingTransactionId, formData);
+                AuthManager.showMessage(`Transaction updated successfully!`, 'success');
+            } else {
+                // Create new transaction
+                const result = await APIClient.createTransaction(formData);
+                AuthManager.showMessage(`Transaction added successfully!`, 'success');
+            }
 
-            // Success!
-            AuthManager.showMessage(`Transaction added successfully!`, 'success');
             this.closeModal();
 
             // Reload portfolio data
@@ -473,8 +608,9 @@ const TransactionManager = {
             await PortfolioManager.loadOverview();
 
         } catch (error) {
-            console.error('Transaction error:', error);
-            this.showError(error.message || 'Failed to create transaction');
+            Debug.error('Transaction error:', error);
+            ErrorHandler.handleApiError(error, 'Failed to save transaction. Please check your input and try again.');
+            this.showError(error.message || 'Failed to save transaction');
         } finally {
             this.isSubmitting = false;
             this.showLoading(false);
@@ -528,8 +664,8 @@ const TransactionManager = {
      * Reset form
      */
     resetForm() {
-        console.log('🟡 resetForm() CALLED');
-        console.log('🟡 resetForm() - Hidden field BEFORE reset:', document.getElementById('transaction-crypto-id').value);
+        Debug.log('🟡 resetForm() CALLED');
+        Debug.log('🟡 resetForm() - Hidden field BEFORE reset:', document.getElementById('transaction-crypto-id').value);
 
         // Reset individual fields instead of form.reset() to preserve hidden fields
         document.getElementById('transaction-quantity').value = '';
@@ -556,8 +692,8 @@ const TransactionManager = {
         document.getElementById('price-helper').textContent = '';
         document.getElementById('date-helper').textContent = '';
 
-        console.log('🟡 resetForm() - Hidden field AFTER reset:', document.getElementById('transaction-crypto-id').value);
-        console.log('🟡 resetForm() - COMPLETED (hidden fields should be preserved)');
+        Debug.log('🟡 resetForm() - Hidden field AFTER reset:', document.getElementById('transaction-crypto-id').value);
+        Debug.log('🟡 resetForm() - COMPLETED (hidden fields should be preserved)');
     },
 
     /**
@@ -580,12 +716,20 @@ const TransactionManager = {
      * @param {number} portfolioId
      */
     async loadTransactions(portfolioId) {
+        const emptyState = document.getElementById('transactions-empty');
+        const tableWrapper = document.querySelector('.transactions-section .table-wrapper');
+
         try {
+            // Show skeleton loaders while loading
+            emptyState.style.display = 'none';
+            tableWrapper.style.display = 'block';
+            this.showTransactionsTableSkeleton();
+
             const transactions = await APIClient.getTransactions(portfolioId);
 
-            const emptyState = document.getElementById('transactions-empty');
-            const tableWrapper = document.querySelector('.transactions-section .table-wrapper');
-            const cardsContainer = document.getElementById('transactions-cards');
+            // Store all transactions
+            this.allTransactions = transactions;
+            this.filteredTransactions = transactions;
 
             if (transactions.length === 0) {
                 // Show empty state
@@ -599,13 +743,35 @@ const TransactionManager = {
             emptyState.style.display = 'none';
             tableWrapper.style.display = 'block';
 
-            // Render transactions table
-            this.renderTransactionsTable(transactions);
-            this.renderTransactionsCards(transactions);
+            // Apply current filters
+            this.applyFilters();
 
         } catch (error) {
-            console.error('Error loading transactions:', error);
+            Debug.error('Error loading transactions:', error);
         }
+    },
+
+    /**
+     * Show skeleton loaders for transactions table
+     */
+    showTransactionsTableSkeleton() {
+        const tbody = document.getElementById('transactions-table-body');
+        if (!tbody) return;
+
+        const skeletonRows = Array(5).fill(0).map(() => `
+            <tr>
+                <td><div class="skeleton" style="height: 20px; width: 120px;"></div></td>
+                <td><div class="skeleton" style="height: 24px; width: 50px;"></div></td>
+                <td><div class="skeleton" style="height: 40px; width: 140px;"></div></td>
+                <td><div class="skeleton" style="height: 20px; width: 90px;"></div></td>
+                <td><div class="skeleton" style="height: 20px; width: 80px;"></div></td>
+                <td><div class="skeleton" style="height: 20px; width: 50px;"></div></td>
+                <td><div class="skeleton" style="height: 20px; width: 90px;"></div></td>
+                <td><div class="skeleton" style="height: 24px; width: 60px;"></div></td>
+            </tr>
+        `).join('');
+
+        tbody.innerHTML = skeletonRows;
     },
 
     /**
@@ -659,100 +825,128 @@ const TransactionManager = {
     },
 
     /**
-     * Render transactions cards for mobile
-     * @param {array} transactions
-     */
-    renderTransactionsCards(transactions) {
-        const container = document.getElementById('transactions-cards');
-        if (!container) return;
-
-        container.innerHTML = transactions.map(tx => {
-            const date = new Date(tx.transaction_date);
-            const formattedDate = date.toLocaleString('en-US', {
-                month: 'short',
-                day: 'numeric',
-                year: 'numeric',
-                hour: '2-digit',
-                minute: '2-digit'
-            });
-
-            return `
-                <div class="transaction-card">
-                    <div class="transaction-card-header">
-                        <span class="transaction-card-date">${formattedDate}</span>
-                        <span class="transaction-type ${tx.transaction_type}">${tx.transaction_type}</span>
-                    </div>
-                    <div class="transaction-card-body">
-                        <div class="transaction-card-field">
-                            <span class="transaction-card-field-label">Asset</span>
-                            <div class="transaction-crypto">
-                                <img src="https://s2.coinmarketcap.com/static/img/coins/64x64/${tx.crypto_id}.png" alt="${tx.crypto_symbol}">
-                                <div class="transaction-crypto-info">
-                                    <div class="transaction-crypto-name">${tx.crypto_name}</div>
-                                    <div class="transaction-crypto-symbol">${tx.crypto_symbol}</div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="transaction-card-field">
-                            <span class="transaction-card-field-label">Quantity</span>
-                            <span class="transaction-card-field-value">${parseFloat(tx.quantity).toFixed(8)}</span>
-                        </div>
-                        <div class="transaction-card-field">
-                            <span class="transaction-card-field-label">Price</span>
-                            <span class="transaction-card-field-value">$${this.formatPrice(parseFloat(tx.price_per_coin))}</span>
-                        </div>
-                        <div class="transaction-card-field">
-                            <span class="transaction-card-field-label">Total</span>
-                            <span class="transaction-card-field-value">$${parseFloat(tx.total_amount).toFixed(2)}</span>
-                        </div>
-                    </div>
-                    <div class="transaction-card-footer">
-                        <button class="btn-icon-sm" onclick="TransactionManager.editTransaction(${tx.id})" title="Edit">
-                            ✏️
-                        </button>
-                        <button class="btn-icon-sm danger" onclick="TransactionManager.deleteTransaction(${tx.id})" title="Delete">
-                            🗑️
-                        </button>
-                    </div>
-                </div>
-            `;
-        }).join('');
-    },
-
-    /**
      * Edit transaction
      * @param {number} transactionId
      */
     async editTransaction(transactionId) {
-        // TODO: Implement edit transaction modal
-        // For now, just log
-        console.log('Edit transaction:', transactionId);
-        AuthManager.showMessage('Edit transaction feature coming soon!', 'info');
+        try {
+            // Fetch transaction details
+            const transaction = await APIClient.getTransaction(transactionId);
+
+            // Set editing mode
+            this.editingTransactionId = transactionId;
+            this.currentPortfolioId = transaction.portfolio_id;
+
+            // Show modal with transaction data
+            this.showModal(transaction.portfolio_id, transaction);
+
+        } catch (error) {
+            Debug.error('Error loading transaction for edit:', error);
+            AuthManager.showMessage(error.message || 'Failed to load transaction', 'error');
+        }
     },
 
     /**
-     * Delete transaction
+     * Show confirmation dialog
+     * @param {Object} options - Dialog options
+     * @returns {Promise<boolean>} True if confirmed, false if canceled
+     */
+    showConfirmDialog(options = {}) {
+        return new Promise((resolve) => {
+            const overlay = document.createElement('div');
+            overlay.className = 'confirm-overlay';
+            overlay.style.cssText = `
+                position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+                background: rgba(0, 0, 0, 0.7); display: flex; align-items: center;
+                justify-content: center; z-index: 10000; animation: fadeIn 0.2s ease-out;
+            `;
+
+            const modal = document.createElement('div');
+            modal.className = 'confirm-modal';
+            modal.style.cssText = `
+                background: var(--bg-secondary, #2a2a2a); border-radius: 12px;
+                padding: 24px; max-width: 400px; width: 90%;
+                box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+                animation: slideIn 0.3s ease-out;
+            `;
+
+            modal.innerHTML = `
+                <div style="margin-bottom: 16px;">
+                    <h3 style="margin: 0 0 12px 0; color: var(--text-primary); font-size: 18px; font-weight: 600;">
+                        ${options.title || 'Confirm Action'}
+                    </h3>
+                    <p style="margin: 0; color: var(--text-secondary); font-size: 14px; line-height: 1.5;">
+                        ${options.message || 'Are you sure?'}
+                    </p>
+                </div>
+                <div style="display: flex; gap: 12px; justify-content: flex-end;">
+                    <button id="confirm-cancel" style="
+                        padding: 10px 20px; border: 1px solid var(--border-color);
+                        background: transparent; color: var(--text-primary);
+                        border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 500;
+                    ">${options.cancelText || 'Cancel'}</button>
+                    <button id="confirm-ok" style="
+                        padding: 10px 20px; border: none; background: #EA3943;
+                        color: white; border-radius: 8px; cursor: pointer;
+                        font-size: 14px; font-weight: 500;
+                    ">${options.confirmText || 'Confirm'}</button>
+                </div>
+            `;
+
+            overlay.appendChild(modal);
+            document.body.appendChild(overlay);
+
+            const handleConfirm = () => {
+                overlay.remove();
+                resolve(true);
+            };
+
+            const handleCancel = () => {
+                overlay.remove();
+                resolve(false);
+            };
+
+            modal.querySelector('#confirm-ok').addEventListener('click', handleConfirm);
+            modal.querySelector('#confirm-cancel').addEventListener('click', handleCancel);
+            overlay.addEventListener('click', (e) => {
+                if (e.target === overlay) handleCancel();
+            });
+
+            document.addEventListener('keydown', function escHandler(e) {
+                if (e.key === 'Escape') {
+                    handleCancel();
+                    document.removeEventListener('keydown', escHandler);
+                }
+            });
+        });
+    },
+
+    /**
+     * Delete transaction with confirmation
      * @param {number} transactionId
      */
     async deleteTransaction(transactionId) {
-        if (!confirm('Are you sure you want to delete this transaction?')) {
-            return;
-        }
+        const confirmed = await this.showConfirmDialog({
+            title: 'Delete Transaction',
+            message: 'Are you sure you want to delete this transaction? This action cannot be undone.',
+            confirmText: 'Delete',
+            cancelText: 'Cancel'
+        });
+
+        if (!confirmed) return;
 
         try {
             await APIClient.deleteTransaction(transactionId);
             AuthManager.showMessage('Transaction deleted successfully!', 'success');
 
-            // Reload portfolio
             if (PortfolioManager.currentPortfolio) {
                 await PortfolioManager.loadPortfolio(PortfolioManager.currentPortfolio);
             }
 
-            // Also reload overview to update total statistics across all portfolios
             await PortfolioManager.loadOverview();
         } catch (error) {
-            console.error('Delete error:', error);
-            AuthManager.showMessage(error.message || 'Failed to delete transaction', 'error');
+            Debug.error('Delete error:', error);
+            ErrorHandler.handleApiError(error, 'Failed to delete transaction. Please try again.');
         }
     },
 
@@ -805,8 +999,137 @@ const TransactionManager = {
             AuthManager.showMessage('Transactions exported successfully!', 'success');
 
         } catch (error) {
-            console.error('Export error:', error);
+            Debug.error('Export error:', error);
             AuthManager.showMessage(error.message || 'Failed to export transactions', 'error');
+        }
+    },
+
+    /**
+     * Apply filters to transactions
+     */
+    applyFilters() {
+        let filtered = [...this.allTransactions];
+
+        // Apply search filter
+        if (this.filters.search) {
+            filtered = filtered.filter(tx =>
+                tx.crypto_name.toLowerCase().includes(this.filters.search) ||
+                tx.crypto_symbol.toLowerCase().includes(this.filters.search)
+            );
+        }
+
+        // Apply type filter
+        if (this.filters.type !== 'all') {
+            filtered = filtered.filter(tx => tx.transaction_type === this.filters.type);
+        }
+
+        // Apply date filter
+        if (this.filters.date !== 'all') {
+            const now = new Date();
+            const startDate = this.getFilterStartDate(this.filters.date, now);
+
+            filtered = filtered.filter(tx => {
+                const txDate = new Date(tx.transaction_date);
+                return txDate >= startDate;
+            });
+        }
+
+        // Store filtered results
+        this.filteredTransactions = filtered;
+
+        // Render filtered transactions
+        if (filtered.length === 0) {
+            this.showNoResultsMessage();
+        } else {
+            this.renderTransactionsTable(filtered);
+        }
+    },
+
+    /**
+     * Get start date for date filter
+     * @param {string} filterValue - Filter value (today, week, month, year)
+     * @param {Date} now - Current date
+     * @returns {Date}
+     */
+    getFilterStartDate(filterValue, now) {
+        const date = new Date(now);
+
+        switch (filterValue) {
+            case 'today':
+                date.setHours(0, 0, 0, 0);
+                break;
+            case 'week':
+                date.setDate(date.getDate() - 7);
+                break;
+            case 'month':
+                date.setDate(date.getDate() - 30);
+                break;
+            case 'year':
+                date.setFullYear(date.getFullYear() - 1);
+                break;
+        }
+
+        return date;
+    },
+
+    /**
+     * Clear all filters
+     */
+    clearFilters() {
+        // Reset filter values
+        this.filters = {
+            search: '',
+            type: 'all',
+            date: 'all'
+        };
+
+        // Reset filter inputs
+        const transactionSearchInput = document.getElementById('transaction-search');
+        if (transactionSearchInput) transactionSearchInput.value = '';
+
+        const typeFilter = document.getElementById('transaction-type-filter');
+        if (typeFilter) typeFilter.value = 'all';
+
+        const dateFilter = document.getElementById('transaction-date-filter');
+        if (dateFilter) dateFilter.value = 'all';
+
+        // Apply filters (will show all transactions)
+        this.applyFilters();
+
+        // Hide clear button
+        this.updateClearButtonVisibility();
+    },
+
+    /**
+     * Update visibility of clear filters button
+     */
+    updateClearButtonVisibility() {
+        const clearBtn = document.getElementById('clear-filters');
+        if (!clearBtn) return;
+
+        const hasActiveFilters = this.filters.search !== '' ||
+                                 this.filters.type !== 'all' ||
+                                 this.filters.date !== 'all';
+
+        clearBtn.style.display = hasActiveFilters ? 'inline-flex' : 'none';
+    },
+
+    /**
+     * Show no results message
+     */
+    showNoResultsMessage() {
+        const tbody = document.getElementById('transactions-table-body');
+
+        if (tbody) {
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="8" style="text-align: center; padding: 40px; color: var(--text-secondary);">
+                        <div style="font-size: 48px; margin-bottom: 12px;">🔍</div>
+                        <div style="font-size: 16px; font-weight: 500; margin-bottom: 8px;">No transactions found</div>
+                        <div style="font-size: 14px;">Try adjusting your filters to see more results</div>
+                    </td>
+                </tr>
+            `;
         }
     }
 };

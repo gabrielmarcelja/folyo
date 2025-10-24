@@ -94,6 +94,11 @@ const AuthManager = {
         try {
             const data = await APIClient.getAuthStatus();
 
+            // Store CSRF token
+            if (data.csrf_token) {
+                APIClient.setCsrfToken(data.csrf_token);
+            }
+
             if (data.authenticated) {
                 this.isAuthenticated = true;
                 this.currentUser = data.user;
@@ -106,7 +111,7 @@ const AuthManager = {
 
             return this.isAuthenticated;
         } catch (error) {
-            console.error('Error checking auth status:', error);
+            Debug.error('Error checking auth status:', error);
             this.isAuthenticated = false;
             this.currentUser = null;
             this.updateUIForGuestUser();
@@ -135,6 +140,11 @@ const AuthManager = {
         try {
             const data = await APIClient.login(email, password);
 
+            // Store CSRF token
+            if (data.csrf_token) {
+                APIClient.setCsrfToken(data.csrf_token);
+            }
+
             // Login successful
             this.isAuthenticated = true;
             this.currentUser = data.user;
@@ -162,7 +172,7 @@ const AuthManager = {
             }
 
         } catch (error) {
-            console.error('Login error:', error);
+            Debug.error('Login error:', error);
 
             if (errorDiv) {
                 errorDiv.textContent = error.message || 'Invalid email or password';
@@ -205,6 +215,11 @@ const AuthManager = {
         try {
             const data = await APIClient.register(email, password);
 
+            // Store CSRF token
+            if (data.csrf_token) {
+                APIClient.setCsrfToken(data.csrf_token);
+            }
+
             // Registration successful
             this.isAuthenticated = true;
             this.currentUser = data.user;
@@ -227,7 +242,7 @@ const AuthManager = {
             }, 1500);
 
         } catch (error) {
-            console.error('Signup error:', error);
+            Debug.error('Signup error:', error);
 
             if (errorDiv) {
                 errorDiv.textContent = error.message || 'Failed to create account';
@@ -256,7 +271,7 @@ const AuthManager = {
             window.location.href = '/';
 
         } catch (error) {
-            console.error('Logout error:', error);
+            Debug.error('Logout error:', error);
             this.showMessage('Failed to logout', 'error');
         }
     },

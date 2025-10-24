@@ -190,7 +190,7 @@
                     </div>
                     <div class="portfolio-actions">
                         <label class="toggle-switch">
-                            <input type="checkbox" id="show-charts-overview">
+                            <input type="checkbox" id="show-charts-overview" checked>
                             <span class="toggle-slider"></span>
                             <span class="toggle-label">Show charts</span>
                         </label>
@@ -258,14 +258,28 @@
                         <table class="holdings-table">
                             <thead>
                                 <tr>
-                                    <th>Assets</th>
+                                    <th class="sortable" data-sort="name">
+                                        Assets <span class="sort-icon"></span>
+                                    </th>
                                     <th>Portfolio Allocation</th>
-                                    <th>Price</th>
-                                    <th>1h%</th>
-                                    <th>24h%</th>
-                                    <th>7d%</th>
-                                    <th>Balance</th>
-                                    <th>Value</th>
+                                    <th class="sortable" data-sort="price">
+                                        Price <span class="sort-icon"></span>
+                                    </th>
+                                    <th class="sortable" data-sort="change1h">
+                                        1h% <span class="sort-icon"></span>
+                                    </th>
+                                    <th class="sortable" data-sort="change24h">
+                                        24h% <span class="sort-icon"></span>
+                                    </th>
+                                    <th class="sortable" data-sort="change7d">
+                                        7d% <span class="sort-icon"></span>
+                                    </th>
+                                    <th class="sortable" data-sort="balance">
+                                        Balance <span class="sort-icon"></span>
+                                    </th>
+                                    <th class="sortable" data-sort="value">
+                                        Value <span class="sort-icon"></span>
+                                    </th>
                                 </tr>
                             </thead>
                             <tbody id="holdings-table-body">
@@ -292,7 +306,7 @@
                     </div>
                     <div class="wallet-actions">
                         <label class="toggle-switch">
-                            <input type="checkbox" id="show-charts-wallet">
+                            <input type="checkbox" id="show-charts-wallet" checked>
                             <span class="toggle-slider"></span>
                             <span class="toggle-label">Show charts</span>
                         </label>
@@ -383,14 +397,30 @@
                         <table class="assets-table">
                             <thead>
                                 <tr>
-                                    <th>Name</th>
-                                    <th>Price</th>
-                                    <th>1h%</th>
-                                    <th>24h%</th>
-                                    <th>7d%</th>
-                                    <th>Holdings</th>
-                                    <th>Avg Buy Price</th>
-                                    <th>Profit/Loss</th>
+                                    <th class="sortable" data-sort="name">
+                                        Name <span class="sort-icon"></span>
+                                    </th>
+                                    <th class="sortable" data-sort="price">
+                                        Price <span class="sort-icon"></span>
+                                    </th>
+                                    <th class="sortable" data-sort="change1h">
+                                        1h% <span class="sort-icon"></span>
+                                    </th>
+                                    <th class="sortable" data-sort="change24h">
+                                        24h% <span class="sort-icon"></span>
+                                    </th>
+                                    <th class="sortable" data-sort="change7d">
+                                        7d% <span class="sort-icon"></span>
+                                    </th>
+                                    <th class="sortable" data-sort="balance">
+                                        Holdings <span class="sort-icon"></span>
+                                    </th>
+                                    <th class="sortable" data-sort="avgBuyPrice">
+                                        Avg Buy Price <span class="sort-icon"></span>
+                                    </th>
+                                    <th class="sortable" data-sort="profitLoss">
+                                        Profit/Loss <span class="sort-icon"></span>
+                                    </th>
                                     <th>Actions</th>
                                 </tr>
                             </thead>
@@ -422,6 +452,30 @@
                         </div>
                     </div>
 
+                    <!-- Transactions Filters -->
+                    <div class="transactions-filters">
+                        <div class="filter-group">
+                            <input type="text" id="transaction-search" class="filter-input" placeholder="Search by asset name or symbol...">
+                        </div>
+                        <div class="filter-group">
+                            <select id="transaction-type-filter" class="filter-select">
+                                <option value="all">All Types</option>
+                                <option value="buy">Buy</option>
+                                <option value="sell">Sell</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <select id="transaction-date-filter" class="filter-select">
+                                <option value="all">All Time</option>
+                                <option value="today">Today</option>
+                                <option value="week">Last 7 Days</option>
+                                <option value="month">Last 30 Days</option>
+                                <option value="year">Last Year</option>
+                            </select>
+                        </div>
+                        <button id="clear-filters" class="btn-secondary btn-sm" style="display: none;">Clear Filters</button>
+                    </div>
+
                     <div class="table-wrapper">
                         <table class="transactions-table">
                             <thead>
@@ -440,11 +494,6 @@
                                 <!-- Rendered by JS -->
                             </tbody>
                         </table>
-                    </div>
-
-                    <!-- Mobile Cards -->
-                    <div class="transactions-cards" id="transactions-cards">
-                        <!-- Rendered by JS for mobile -->
                     </div>
 
                     <!-- Empty State -->
@@ -690,6 +739,9 @@
 
     <!-- JavaScript -->
     <script src="../js/config.js"></script>
+    <script src="../js/debug.js"></script>
+    <script src="../js/error-handler.js"></script>
+    <script src="../js/validators.js"></script>
     <script src="../js/theme.js"></script>
     <script src="../js/currency.js"></script>
     <script src="../js/ui.js"></script>

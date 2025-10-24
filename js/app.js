@@ -20,10 +20,8 @@ const App = {
 
             // Setup auto-refresh
             this.setupAutoRefresh();
-
-            console.log('✅ Folyo initialized successfully');
         } catch (error) {
-            console.error('❌ Error initializing app:', error);
+            Debug.error('Error initializing app:', error);
             UI.showError('Failed to initialize application. Please refresh the page.');
         }
     },
@@ -51,7 +49,7 @@ const App = {
 
             return data;
         } catch (error) {
-            console.error('Error loading data:', error);
+            Debug.error('Error loading data:', error);
             UI.showError(
                 'Failed to load cryptocurrency data. Please check your internet connection and try again.'
             );
@@ -64,8 +62,6 @@ const App = {
      */
     async refreshData() {
         try {
-            console.log('🔄 Refreshing data...');
-
             const currency = CurrencyManager.getCurrency();
             const data = await API.fetchAllData(1, 5000, currency);
 
@@ -102,10 +98,8 @@ const App = {
 
             // Update last update time
             UI.updateLastUpdateTime();
-
-            console.log('✅ Data refreshed successfully');
         } catch (error) {
-            console.error('Error refreshing data:', error);
+            Debug.error('Error refreshing data:', error);
             // Don't show error on refresh failure, just log it
         }
     },
@@ -123,8 +117,6 @@ const App = {
         this.refreshIntervalId = setInterval(() => {
             this.refreshData();
         }, CONFIG.REFRESH_INTERVAL);
-
-        console.log(`⏱️ Auto-refresh enabled (every ${CONFIG.REFRESH_INTERVAL / 1000} seconds)`);
     },
 
     /**
@@ -134,7 +126,6 @@ const App = {
         if (this.refreshIntervalId) {
             clearInterval(this.refreshIntervalId);
             this.refreshIntervalId = null;
-            console.log('⏸️ Auto-refresh stopped');
         }
     }
 };

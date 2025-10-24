@@ -6,5 +6,5 @@
 // Initialize when DOM is ready
 document.addEventListener('DOMContentLoaded', () => {
     AuthManager.init();
-    console.log('✅ Authentication system initialized');
+    Debug.log('✅ Authentication system initialized');
 });

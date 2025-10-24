@@ -95,16 +95,25 @@ function getPortfolioHoldings($portfolioId) {
 
     foreach ($holdings as &$holding) {
         $cryptoId = $holding['crypto_id'];
+        $portfolioIdForCalc = $holding['portfolio_id'];
         $cryptoPriceData = $priceData[$cryptoId] ?? ['price' => 0, 'percent_change_1h' => 0, 'percent_change_24h' => 0, 'percent_change_7d' => 0];
         $currentPrice = $cryptoPriceData['price'];
+
+        // Calculate FIFO cost basis (more accurate than weighted average)
+        $fifoCostBasis = calculateFIFOCostBasis($portfolioIdForCalc, $cryptoId);
 
         // Current value
         $currentValue = floatval($holding['total_quantity']) * $currentPrice;
 
-        // Profit/Loss
-        $costBasis = floatval($holding['cost_basis']);
+        // Profit/Loss using FIFO cost basis
+        $costBasis = $fifoCostBasis['cost_basis'];
         $profitLoss = $currentValue - $costBasis;
         $profitLossPercent = $costBasis > 0 ? ($profitLoss / $costBasis * 100) : 0;
+
+        // Update with FIFO calculations
+        $holding['avg_buy_price'] = $fifoCostBasis['avg_buy_price'];
+        $holding['cost_basis'] = $costBasis;
+        $holding['realized_gain_loss'] = $fifoCostBasis['realized_gain_loss'];
 
         // Add calculated fields
         $holding['current_price'] = $currentPrice;
@@ -299,16 +308,25 @@ function getAllUserHoldings() {
 
     foreach ($holdings as &$holding) {
         $cryptoId = $holding['crypto_id'];
+        $portfolioIdForCalc = $holding['portfolio_id'];
         $cryptoPriceData = $priceData[$cryptoId] ?? ['price' => 0, 'percent_change_1h' => 0, 'percent_change_24h' => 0, 'percent_change_7d' => 0];
         $currentPrice = $cryptoPriceData['price'];
+
+        // Calculate FIFO cost basis (more accurate than weighted average)
+        $fifoCostBasis = calculateFIFOCostBasis($portfolioIdForCalc, $cryptoId);
 
         // Current value
         $currentValue = floatval($holding['total_quantity']) * $currentPrice;
 
-        // Profit/Loss
-        $costBasis = floatval($holding['cost_basis']);
+        // Profit/Loss using FIFO cost basis
+        $costBasis = $fifoCostBasis['cost_basis'];
         $profitLoss = $currentValue - $costBasis;
         $profitLossPercent = $costBasis > 0 ? ($profitLoss / $costBasis * 100) : 0;
+
+        // Update with FIFO calculations
+        $holding['avg_buy_price'] = $fifoCostBasis['avg_buy_price'];
+        $holding['cost_basis'] = $costBasis;
+        $holding['realized_gain_loss'] = $fifoCostBasis['realized_gain_loss'];
 
         // Calculate value change in last 24h
         $priceChange24h = $cryptoPriceData['percent_change_24h'];
@@ -349,16 +367,27 @@ function getAllUserHoldings() {
  * @return array Prices indexed by crypto ID
  */
 /**
- * Fetch current prices with percent changes
+ * Fetch current prices with percent changes (with 5-minute cache)
  */
 function fetchCurrentPricesWithChanges($cryptoIds) {
     if (empty($cryptoIds)) {
         return [];
     }
 
-    // Build API URL
+    // Sort IDs for consistent cache keys
+    sort($cryptoIds);
     $idsString = implode(',', $cryptoIds);
-    $apiUrl = "http://folyo.test/api/proxy.php?endpoint=crypto-quotes&ids={$idsString}";
+
+    // Check cache first (5 minute TTL)
+    $cacheKey = "crypto_prices_{$idsString}";
+    $cached = getCache($cacheKey);
+    if ($cached !== null) {
+        return $cached;
+    }
+
+    // Build API URL using dynamic base URL
+    $baseUrl = getBaseUrl();
+    $apiUrl = "{$baseUrl}/api/proxy.php?endpoint=crypto-quotes&ids={$idsString}";
 
     // Fetch from API
     $ch = curl_init();
@@ -423,6 +452,9 @@ function fetchCurrentPricesWithChanges($cryptoIds) {
         }
     }
 
+    // Cache the result for 5 minutes (300 seconds)
+    setCache($cacheKey, $priceData, 300);
+
     return $priceData;
 }
 
@@ -436,4 +468,119 @@ function fetchCurrentPrices($cryptoIds) {
     }
 
     return $prices;
+}
+
+/**
+ * Calculate FIFO (First In, First Out) cost basis for a portfolio holding
+ * @param int $portfolioId Portfolio ID
+ * @param int $cryptoId Crypto ID
+ * @return array ['cost_basis' => float, 'realized_gain_loss' => float]
+ */
+function calculateFIFOCostBasis($portfolioId, $cryptoId) {
+    // Get all transactions for this portfolio and crypto, ordered by date
+    $transactions = query('
+        SELECT
+            id,
+            transaction_type,
+            quantity,
+            price_per_coin,
+            total_amount,
+            fee,
+            transaction_date
+        FROM transactions
+        WHERE portfolio_id = ? AND crypto_id = ?
+        ORDER BY transaction_date ASC, id ASC
+    ', [$portfolioId, $cryptoId]);
+
+    if (empty($transactions)) {
+        return ['cost_basis' => 0, 'realized_gain_loss' => 0, 'avg_buy_price' => 0];
+    }
+
+    // FIFO queue: stores buy lots [quantity, price_per_coin, total_cost]
+    $buyLots = [];
+    $totalRealizedGainLoss = 0;
+    $totalQuantityRemaining = 0;
+    $totalCostBasisRemaining = 0;
+
+    foreach ($transactions as $tx) {
+        $quantity = floatval($tx['quantity']);
+        $pricePerCoin = floatval($tx['price_per_coin']);
+        $totalAmount = floatval($tx['total_amount']);
+        $fee = floatval($tx['fee']);
+
+        if ($tx['transaction_type'] === 'buy') {
+            // Add to buy lots queue (FIFO)
+            // Cost includes the fee
+            $costWithFee = $totalAmount; // total_amount already includes fee in the calculation
+            $buyLots[] = [
+                'quantity' => $quantity,
+                'price_per_coin' => $pricePerCoin,
+                'cost' => $costWithFee
+            ];
+
+        } elseif ($tx['transaction_type'] === 'sell') {
+            // Sell from oldest lots first (FIFO)
+            $quantityToSell = $quantity;
+            $sellProceeds = $totalAmount - $fee; // Proceeds after fee
+
+            while ($quantityToSell > 0 && !empty($buyLots)) {
+                $oldestLot = &$buyLots[0];
+
+                if ($oldestLot['quantity'] <= $quantityToSell) {
+                    // Sell entire lot
+                    $soldQuantity = $oldestLot['quantity'];
+                    $soldCost = $oldestLot['cost'];
+
+                    // Calculate proportion of proceeds for this lot
+                    $proceedsForThisLot = ($soldQuantity / $quantity) * $sellProceeds;
+
+                    // Realized gain/loss for this lot
+                    $realizedGainLoss = $proceedsForThisLot - $soldCost;
+                    $totalRealizedGainLoss += $realizedGainLoss;
+
+                    $quantityToSell -= $soldQuantity;
+
+                    // Remove the lot
+                    array_shift($buyLots);
+
+                } else {
+                    // Sell part of the lot
+                    $soldQuantity = $quantityToSell;
+                    $costPerUnit = $oldestLot['cost'] / $oldestLot['quantity'];
+                    $soldCost = $soldQuantity * $costPerUnit;
+
+                    // Calculate proportion of proceeds
+                    $proceedsForThisLot = ($soldQuantity / $quantity) * $sellProceeds;
+
+                    // Realized gain/loss
+                    $realizedGainLoss = $proceedsForThisLot - $soldCost;
+                    $totalRealizedGainLoss += $realizedGainLoss;
+
+                    // Update the lot
+                    $oldestLot['quantity'] -= $soldQuantity;
+                    $oldestLot['cost'] -= $soldCost;
+
+                    $quantityToSell = 0;
+                }
+            }
+
+            // If quantityToSell > 0 here, it means we're short-selling (shouldn't happen with validation)
+        }
+    }
+
+    // Calculate remaining cost basis from unsold lots
+    foreach ($buyLots as $lot) {
+        $totalQuantityRemaining += $lot['quantity'];
+        $totalCostBasisRemaining += $lot['cost'];
+    }
+
+    // Calculate average buy price for remaining holdings
+    $avgBuyPrice = $totalQuantityRemaining > 0 ? ($totalCostBasisRemaining / $totalQuantityRemaining) : 0;
+
+    return [
+        'cost_basis' => $totalCostBasisRemaining,
+        'realized_gain_loss' => $totalRealizedGainLoss,
+        'avg_buy_price' => $avgBuyPrice,
+        'quantity_remaining' => $totalQuantityRemaining
+    ];
 }

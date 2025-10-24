@@ -115,8 +115,8 @@ function getPortfolioHistory($portfolioId, $period) {
         ]
     ];
 
-    // Cache for 1 hour
-    setCache($cacheKey, $result, 3600);
+    // Cache for 10 minutes (more reasonable for volatile crypto markets)
+    setCache($cacheKey, $result, 600);
 
     return $result;
 }
@@ -239,8 +239,9 @@ function fetchHistoricalPricesBatch($cryptoIds, $timestamps, $period) {
     // For batch efficiency, we'll make one request per period
     $idsString = implode(',', $cryptoIds);
 
-    // Build API URL
-    $apiUrl = "http://folyo.test/api/proxy.php?endpoint=ohlcv-historical&ids={$idsString}&count={$count}&interval={$interval}&time_period={$interval}";
+    // Build API URL using dynamic base URL
+    $baseUrl = getBaseUrl();
+    $apiUrl = "{$baseUrl}/api/proxy.php?endpoint=ohlcv-historical&ids={$idsString}&count={$count}&interval={$interval}&time_period={$interval}";
 
     // Fetch from API
     $ch = curl_init();
@@ -296,7 +297,8 @@ function fetchCurrentPricesAsFallback($cryptoIds, $timestamps) {
     $prices = [];
     $idsString = implode(',', $cryptoIds);
 
-    $apiUrl = "http://folyo.test/api/proxy.php?endpoint=crypto-quotes&ids={$idsString}";
+    $baseUrl = getBaseUrl();
+    $apiUrl = "{$baseUrl}/api/proxy.php?endpoint=crypto-quotes&ids={$idsString}";
 
     $ch = curl_init();
     curl_setopt($ch, CURLOPT_URL, $apiUrl);
@@ -364,53 +366,5 @@ function formatDateForPeriod($timestamp, $period) {
     }
 }
 
-/**
- * Simple file-based cache (get)
- * @param string $key
- * @return mixed|null
- */
-function getCache($key) {
-    $cacheDir = __DIR__ . '/../cache';
-    if (!is_dir($cacheDir)) {
-        mkdir($cacheDir, 0755, true);
-    }
-
-    $cacheFile = $cacheDir . '/' . md5($key) . '.cache';
-
-    if (!file_exists($cacheFile)) {
-        return null;
-    }
-
-    $data = file_get_contents($cacheFile);
-    $cached = json_decode($data, true);
-
-    // Check expiry
-    if (!$cached || !isset($cached['expires']) || $cached['expires'] < time()) {
-        @unlink($cacheFile);
-        return null;
-    }
-
-    return $cached['data'];
-}
-
-/**
- * Simple file-based cache (set)
- * @param string $key
- * @param mixed $data
- * @param int $ttl Time to live in seconds
- */
-function setCache($key, $data, $ttl = 3600) {
-    $cacheDir = __DIR__ . '/../cache';
-    if (!is_dir($cacheDir)) {
-        mkdir($cacheDir, 0755, true);
-    }
-
-    $cacheFile = $cacheDir . '/' . md5($key) . '.cache';
-
-    $cached = [
-        'expires' => time() + $ttl,
-        'data' => $data
-    ];
-
-    file_put_contents($cacheFile, json_encode($cached));
-}
+// Cache functions are now centralized in database.php
+// getCache() and setCache() are available globally

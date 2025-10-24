@@ -45,6 +45,9 @@ const ThemeManager = {
         if (save) {
             localStorage.setItem(CONFIG.STORAGE_KEYS.THEME, theme);
         }
+
+        // Dispatch custom event for theme change
+        window.dispatchEvent(new CustomEvent('themeChanged', { detail: { theme } }));
     },
 
     /**

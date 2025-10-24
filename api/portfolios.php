@@ -133,6 +133,7 @@ function getPortfolio($portfolioId) {
  * Body: { "name": "My Wallet", "description": "Optional description" }
  */
 function createPortfolio() {
+    requireCsrfToken(); // CSRF protection
     $userId = getCurrentUserId();
     $data = getJsonInput();
 
@@ -184,6 +185,7 @@ function createPortfolio() {
  * Body: { "name": "Updated Name", "description": "Updated description" }
  */
 function updatePortfolio($portfolioId) {
+    requireCsrfToken(); // CSRF protection
     $userId = getCurrentUserId();
     $data = getJsonInput();
 
@@ -257,6 +259,7 @@ function updatePortfolio($portfolioId) {
  * DELETE /api/portfolios.php?id={id}
  */
 function deletePortfolio($portfolioId) {
+    requireCsrfToken(); // CSRF protection
     $userId = getCurrentUserId();
 
     // Check if portfolio exists and belongs to user

@@ -100,7 +100,7 @@ const CurrencyDetail = {
 
             // Verify cryptoId is set
             if (!this.cryptoId) {
-                console.error('No crypto ID found after loading data');
+                Debug.error('No crypto ID found after loading data');
                 throw new Error('Invalid cryptocurrency data');
             }
 
@@ -110,7 +110,7 @@ const CurrencyDetail = {
             this.hideLoading();
 
         } catch (error) {
-            console.error('Error loading data:', error);
+            Debug.error('Error loading data:', error);
             this.showError('Failed to load cryptocurrency data. Please try again.');
         }
     },
@@ -154,17 +154,17 @@ const CurrencyDetail = {
 
             // Debug log for 24h period
             if (period === '24h') {
-                console.log('=== 24h Period Debug ===');
-                console.log('Request Parameters:', { cryptoId: this.cryptoId, count, currency, interval });
-                console.log('Full API Response:', ohlcvResponse);
-                console.log('Response Status:', ohlcvResponse.status);
+                Debug.log('=== 24h Period Debug ===');
+                Debug.log('Request Parameters:', { cryptoId: this.cryptoId, count, currency, interval });
+                Debug.log('Full API Response:', ohlcvResponse);
+                Debug.log('Response Status:', ohlcvResponse.status);
                 if (ohlcvResponse.status && ohlcvResponse.status.error_message) {
-                    console.error('API Error Message:', ohlcvResponse.status.error_message);
+                    Debug.error('API Error Message:', ohlcvResponse.status.error_message);
                 }
                 if (ohlcvResponse.status && ohlcvResponse.status.notice) {
                     console.warn('API Notice:', ohlcvResponse.status.notice);
                 }
-                console.log('Response Data:', ohlcvResponse.data);
+                Debug.log('Response Data:', ohlcvResponse.data);
             }
 
             // Extract OHLCV data
@@ -174,42 +174,42 @@ const CurrencyDetail = {
             let cryptoData;
 
             if (period === '24h') {
-                console.log('24h - Checking data structure...');
-                console.log('24h - data.quotes exists?', !!(ohlcvResponse.data && ohlcvResponse.data.quotes));
-                console.log('24h - data[cryptoId] exists?', !!(ohlcvResponse.data && ohlcvResponse.data[this.cryptoId]));
+                Debug.log('24h - Checking data structure...');
+                Debug.log('24h - data.quotes exists?', !!(ohlcvResponse.data && ohlcvResponse.data.quotes));
+                Debug.log('24h - data[cryptoId] exists?', !!(ohlcvResponse.data && ohlcvResponse.data[this.cryptoId]));
             }
 
             // Check if data has 'quotes' property directly (single crypto format)
             if (ohlcvResponse.data && ohlcvResponse.data.quotes) {
                 cryptoData = ohlcvResponse.data;
-                if (period === '24h') console.log('24h - Using direct data format');
+                if (period === '24h') Debug.log('24h - Using direct data format');
             }
             // Otherwise try to access by ID (multiple cryptos format)
             else if (ohlcvResponse.data && ohlcvResponse.data[this.cryptoId]) {
                 cryptoData = ohlcvResponse.data[this.cryptoId];
-                if (period === '24h') console.log('24h - Using indexed data format');
+                if (period === '24h') Debug.log('24h - Using indexed data format');
             }
             // Last resort: check if data is a map and get first entry
             else if (ohlcvResponse.data && typeof ohlcvResponse.data === 'object') {
                 const dataKeys = Object.keys(ohlcvResponse.data).filter(k => k !== 'id' && k !== 'name' && k !== 'symbol');
-                if (period === '24h') console.log('24h - Trying first key:', dataKeys[0], 'from', dataKeys);
+                if (period === '24h') Debug.log('24h - Trying first key:', dataKeys[0], 'from', dataKeys);
                 if (dataKeys.length > 0) {
                     cryptoData = ohlcvResponse.data[dataKeys[0]];
                 }
             }
 
             if (!cryptoData || !cryptoData.quotes) {
-                console.error('Invalid OHLCV data structure from API');
+                Debug.error('Invalid OHLCV data structure from API');
                 if (period === '24h') {
-                    console.error('24h - cryptoData:', cryptoData);
-                    console.error('24h - Has quotes?', cryptoData && cryptoData.quotes);
+                    Debug.error('24h - cryptoData:', cryptoData);
+                    Debug.error('24h - Has quotes?', cryptoData && cryptoData.quotes);
                 }
                 throw new Error('No chart data available');
             }
 
             if (period === '24h') {
-                console.log('24h - cryptoData extracted successfully:', cryptoData);
-                console.log('24h - Number of quotes:', cryptoData.quotes.length);
+                Debug.log('24h - cryptoData extracted successfully:', cryptoData);
+                Debug.log('24h - Number of quotes:', cryptoData.quotes.length);
 
                 // Check if we got insufficient data for 24h (hourly not supported)
                 if (cryptoData.quotes.length < 10) {
@@ -219,10 +219,10 @@ const CurrencyDetail = {
 
                     if (fallbackResponse.data && fallbackResponse.data.quotes) {
                         cryptoData = fallbackResponse.data;
-                        console.log('24h - Fallback to daily data successful:', cryptoData.quotes.length, 'points');
+                        Debug.log('24h - Fallback to daily data successful:', cryptoData.quotes.length, 'points');
                     } else if (fallbackResponse.data && fallbackResponse.data[this.cryptoId]) {
                         cryptoData = fallbackResponse.data[this.cryptoId];
-                        console.log('24h - Fallback to daily data successful:', cryptoData.quotes.length, 'points');
+                        Debug.log('24h - Fallback to daily data successful:', cryptoData.quotes.length, 'points');
                     }
                 }
             }
@@ -250,7 +250,7 @@ const CurrencyDetail = {
             PriceChart.setData(chartData, currency);
 
         } catch (error) {
-            console.error('Error loading chart data for period:', period, error);
+            Debug.error('Error loading chart data for period:', period, error);
 
             // Provide specific error messages based on the error type
             let errorMessage = 'Failed to load chart data';
@@ -515,7 +515,7 @@ const CurrencyDetail = {
             // Update last update time
             this.updateLastUpdateTime();
         } catch (error) {
-            console.error('Error refreshing quotes:', error);
+            Debug.error('Error refreshing quotes:', error);
         }
     },
 
@@ -528,7 +528,7 @@ const CurrencyDetail = {
             this.refreshQuotes();
         }, 60000);
 
-        console.log('⏱️ Auto-refresh enabled (every 60 seconds)');
+        Debug.log('⏱️ Auto-refresh enabled (every 60 seconds)');
     },
 
     /**

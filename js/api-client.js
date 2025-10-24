@@ -5,38 +5,83 @@
 
 const APIClient = {
     baseURL: '/api',
+    csrfToken: null,
+
+    /**
+     * Set CSRF token
+     * @param {string} token CSRF token
+     */
+    setCsrfToken(token) {
+        this.csrfToken = token;
+    },
 
     /**
      * Make HTTP request
      * @param {string} endpoint API endpoint
      * @param {string} method HTTP method
      * @param {object} data Request body
+     * @param {object} options Additional options (retry, etc.)
      * @returns {Promise<object>} Response data
      */
-    async request(endpoint, method = 'GET', data = null) {
-        const options = {
-            method,
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            credentials: 'include' // Include cookies for session
-        };
+    async request(endpoint, method = 'GET', data = null, options = {}) {
+        const requestFn = async () => {
+            const fetchOptions = {
+                method,
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                credentials: 'include' // Include cookies for session
+            };
 
-        if (data && method !== 'GET') {
-            options.body = JSON.stringify(data);
-        }
+            // Add CSRF token for state-changing requests
+            if (this.csrfToken && ['POST', 'PUT', 'DELETE', 'PATCH'].includes(method)) {
+                fetchOptions.headers['X-CSRF-Token'] = this.csrfToken;
+            }
 
-        try {
-            const response = await fetch(`${this.baseURL}${endpoint}`, options);
-            const result = await response.json();
+            if (data && method !== 'GET') {
+                fetchOptions.body = JSON.stringify(data);
+            }
+
+            const response = await fetch(`${this.baseURL}${endpoint}`, fetchOptions);
+
+            // Try to parse JSON response
+            let result;
+            try {
+                result = await response.json();
+            } catch (e) {
+                // If JSON parsing fails, throw a generic error
+                throw {
+                    status: response.status,
+                    message: `Request failed with status ${response.status}`,
+                    error: 'Invalid JSON response'
+                };
+            }
 
             if (!response.ok) {
-                throw new Error(result.error || 'Request failed');
+                // Create error object with status code
+                const error = new Error(result.error || 'Request failed');
+                error.status = response.status;
+                error.response = result;
+                throw error;
             }
 
             return result.data;
+        };
+
+        try {
+            // Use retry logic for GET requests or if explicitly enabled
+            if (options.retry !== false && (method === 'GET' || options.retry === true)) {
+                return await ErrorHandler.withRetry(requestFn, options.maxRetries || 3, options.retryDelay || 1000);
+            } else {
+                return await requestFn();
+            }
         } catch (error) {
-            console.error('API Error:', error);
+            Debug.error('API Error:', error);
+
+            // Enhance error with additional context
+            error.endpoint = endpoint;
+            error.method = method;
+
             throw error;
         }
     },

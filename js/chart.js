@@ -46,7 +46,7 @@ const PriceChart = {
     init(canvasId) {
         this.canvas = document.getElementById(canvasId);
         if (!this.canvas) {
-            console.error('Canvas element not found:', canvasId);
+            Debug.error('Canvas element not found:', canvasId);
             return;
         }
 
@@ -209,7 +209,7 @@ const PriceChart = {
      */
     render() {
         if (!this.ctx) {
-            console.error('No canvas context available');
+            Debug.error('No canvas context available');
             return;
         }
 

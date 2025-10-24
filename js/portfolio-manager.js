@@ -9,6 +9,9 @@ const PortfolioManager = {
     allHoldings: [],
     isLoading: false,
     loadingTimeout: null,
+    loadingPortfolioId: null, // Track which portfolio is currently loading
+    abortController: null, // AbortController for canceling pending requests
+    modalControllers: {}, // AbortControllers for modal event listeners
 
     /**
      * Initialize portfolio manager
@@ -16,7 +19,6 @@ const PortfolioManager = {
     async init() {
         // Check authentication
         if (!AuthManager.isAuthenticated) {
-            console.log('User not authenticated, skipping portfolio load');
             this.showEmptyState();
             return;
         }
@@ -30,7 +32,7 @@ const PortfolioManager = {
      */
     async loadPortfolios() {
         this.isLoading = true;
-        this.showLoadingState();
+        this.showLoadingState(true); // Show skeleton for portfolio cards on initial load
 
         try {
             const portfolios = await APIClient.getPortfolios();
@@ -46,8 +48,8 @@ const PortfolioManager = {
                 await this.loadOverview();
             }
         } catch (error) {
-            console.error('Error loading portfolios:', error);
-            this.showError('Failed to load portfolios');
+            Debug.error('Error loading portfolios:', error);
+            ErrorHandler.handleApiError(error, 'Failed to load portfolios. Please refresh the page.');
         } finally {
             this.isLoading = false;
         }
@@ -58,29 +60,31 @@ const PortfolioManager = {
      */
     async loadOverview() {
         try {
-            console.log('🔍 loadOverview() CALLED');
             this.showLoadingState();
+
+            // Reload portfolios list to ensure we have the latest
+            const portfolios = await APIClient.getPortfolios();
+            this.portfolios = portfolios;
+
+            // Update sidebar with latest portfolios
+            this.renderPortfoliosSidebar();
 
             // Fetch all holdings across all portfolios
             const response = await APIClient.getAllUserHoldings();
-            console.log('🔍 API Response:', response);
 
             const holdingsData = response.holdings || response;
-            console.log('🔍 Holdings Data:', holdingsData);
-            console.log('🔍 Holdings Count:', holdingsData.length);
 
             this.allHoldings = holdingsData;
 
             // Calculate overview statistics
             const overview = this.calculateOverview(holdingsData);
-            console.log('🔍 Calculated Overview:', overview);
 
             // Render overview
             this.renderOverview(overview);
 
         } catch (error) {
-            console.error('Error loading overview:', error);
-            this.showError('Failed to load portfolio overview');
+            Debug.error('Error loading overview:', error);
+            ErrorHandler.handleApiError(error, 'Failed to load portfolio overview. Please try again.');
         }
     },
 
@@ -89,14 +93,22 @@ const PortfolioManager = {
      * @param {number} portfolioId
      */
     async loadPortfolio(portfolioId) {
-        // Prevent rapid successive clicks (debounce)
-        if (this.isLoading) {
-            console.log('Already loading portfolio, please wait...');
+        // If already loading this exact portfolio, ignore
+        if (this.loadingPortfolioId === portfolioId) {
             return;
+        }
+
+        // If loading a different portfolio, cancel the previous request
+        if (this.isLoading && this.abortController) {
+            this.abortController.abort();
+            this.abortController = null;
         }
 
         try {
             this.isLoading = true;
+            this.loadingPortfolioId = portfolioId;
+            this.abortController = new AbortController();
+
             this.showLoadingState();
             this.currentPortfolio = portfolioId;
 
@@ -123,18 +135,26 @@ const PortfolioManager = {
             // Render portfolio view
             this.renderPortfolioView(portfolioData);
 
-            this.isLoading = false;
-
         } catch (error) {
-            console.error('Error loading portfolio:', error);
-            console.error('Portfolio ID:', portfolioId);
-            console.error('Error details:', error.message);
+            // Ignore abort errors (these are intentional cancellations)
+            if (error.name === 'AbortError') {
+                return;
+            }
 
-            // Show user-friendly error message
-            const errorMessage = error.message || 'Failed to load portfolio data';
-            this.showError(errorMessage);
+            Debug.error('Error loading portfolio:', error);
+            Debug.error('Portfolio ID:', portfolioId);
+            Debug.error('Error details:', error.message);
 
-            this.isLoading = false;
+            // Show user-friendly error message using ErrorHandler
+            ErrorHandler.handleApiError(error, 'Failed to load portfolio data. Please try again.');
+
+        } finally {
+            // Clean up loading state
+            if (this.loadingPortfolioId === portfolioId) {
+                this.isLoading = false;
+                this.loadingPortfolioId = null;
+                this.abortController = null;
+            }
         }
     },
 
@@ -161,7 +181,7 @@ const PortfolioManager = {
 
             return portfolio;
         } catch (error) {
-            console.error('Error creating portfolio:', error);
+            Debug.error('Error creating portfolio:', error);
             AuthManager.showMessage(error.message || 'Failed to create portfolio', 'error');
             throw error;
         }
@@ -192,7 +212,7 @@ const PortfolioManager = {
             await this.loadOverview();
 
         } catch (error) {
-            console.error('Error deleting portfolio:', error);
+            Debug.error('Error deleting portfolio:', error);
             AuthManager.showMessage(error.message || 'Failed to delete portfolio', 'error');
         }
     },
@@ -218,7 +238,7 @@ const PortfolioManager = {
         // Render portfolio items
         walletsListContainer.innerHTML = this.portfolios.map(portfolio => {
             const icon = this.getPortfolioIcon(portfolio.name);
-            const value = portfolio.total_invested || 0;
+            const value = parseFloat(portfolio.total_invested) || 0;
 
             return `
                 <div class="wallet-item-wrapper">
@@ -238,7 +258,25 @@ const PortfolioManager = {
         document.querySelectorAll('.wallet-item').forEach(item => {
             item.addEventListener('click', () => {
                 const portfolioId = parseInt(item.dataset.portfolioId);
-                this.loadPortfolio(portfolioId);
+
+                // Ignore if already loading this portfolio
+                if (this.loadingPortfolioId === portfolioId) {
+                    return;
+                }
+
+                // Disable all buttons during load
+                document.querySelectorAll('.wallet-item').forEach(i => {
+                    i.style.pointerEvents = 'none';
+                    i.style.opacity = '0.6';
+                });
+
+                this.loadPortfolio(portfolioId).finally(() => {
+                    // Re-enable all buttons after load completes
+                    document.querySelectorAll('.wallet-item').forEach(i => {
+                        i.style.pointerEvents = '';
+                        i.style.opacity = '';
+                    });
+                });
 
                 // Update active state
                 document.querySelectorAll('.wallet-item').forEach(i => i.classList.remove('active'));
@@ -257,8 +295,6 @@ const PortfolioManager = {
      * @param {array} holdingsData
      */
     calculateOverview(holdingsData) {
-        console.log('📊 calculateOverview() - Input:', holdingsData);
-
         let totalValue = 0;
         let totalChange24h = 0;
         let allocationMap = new Map();
@@ -266,13 +302,8 @@ const PortfolioManager = {
 
         // Process holdings data
         if (holdingsData && holdingsData.length > 0) {
-            console.log('📊 Processing', holdingsData.length, 'holdings');
-
             holdingsData.forEach((holding, index) => {
-                console.log(`📊 Processing holding ${index}:`, holding);
-
                 const currentValue = parseFloat(holding.current_value || 0);
-                console.log(`📊 Current value for ${holding.crypto_symbol}:`, currentValue);
 
                 totalValue += currentValue;
                 totalChange24h += parseFloat(holding.value_change_24h || 0);
@@ -281,14 +312,12 @@ const PortfolioManager = {
                 if (allocationMap.has(holding.crypto_symbol)) {
                     const existing = allocationMap.get(holding.crypto_symbol);
                     existing.value += currentValue;
-                    console.log(`📊 Added to existing ${holding.crypto_symbol}, new total:`, existing.value);
                 } else {
                     allocationMap.set(holding.crypto_symbol, {
                         token: holding.crypto_symbol,
                         value: currentValue,
                         color: this.getColorForToken(holding.crypto_symbol)
                     });
-                    console.log(`📊 New allocation for ${holding.crypto_symbol}:`, currentValue);
                 }
 
                 // Group holdings by crypto (aggregate across portfolios)
@@ -312,13 +341,6 @@ const PortfolioManager = {
                     });
                 }
             });
-
-            console.log('📊 Total Value:', totalValue);
-            console.log('📊 Total Change 24h:', totalChange24h);
-            console.log('📊 Allocation Map:', allocationMap);
-            console.log('📊 Holdings Map:', holdingsMap);
-        } else {
-            console.log('📊 No holdings data to process');
         }
 
         // Convert holdings map to array
@@ -354,16 +376,11 @@ const PortfolioManager = {
      * @param {object} overview
      */
     renderOverview(overview) {
-        console.log('🎨 renderOverview() - Overview data:', overview);
-
         // Update header values
         const totalValueEl = document.querySelector('.portfolio-total-value');
         if (totalValueEl) {
             const formattedValue = '$' + overview.totalValue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-            console.log('🎨 Setting total value to:', formattedValue);
             totalValueEl.textContent = formattedValue;
-        } else {
-            console.log('🎨 ERROR: .portfolio-total-value element not found!');
         }
 
         const changeEl = document.querySelector('.portfolio-change');
@@ -372,9 +389,6 @@ const PortfolioManager = {
             const arrow = overview.changePercent24h >= 0 ? '▲' : '▼';
             changeEl.className = 'portfolio-change ' + changeClass;
             changeEl.innerHTML = `${overview.change24h >= 0 ? '+' : ''}$${Math.abs(overview.change24h).toFixed(2)} <span class="arrow">${arrow}</span>${Math.abs(overview.changePercent24h).toFixed(2)}% (24h)`;
-            console.log('🎨 Set change to:', changeEl.innerHTML);
-        } else {
-            console.log('🎨 ERROR: .portfolio-change element not found!');
         }
 
         // Update overview button value in sidebar
@@ -383,7 +397,6 @@ const PortfolioManager = {
             const sidebarValue = overviewBtn.querySelector('.sidebar-value');
             if (sidebarValue) {
                 sidebarValue.textContent = '$' + overview.totalValue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-                console.log('🎨 Set sidebar value');
             }
         }
 
@@ -391,25 +404,27 @@ const PortfolioManager = {
         const chartCenter = document.getElementById('chart-center-overview');
         if (chartCenter) {
             chartCenter.textContent = overview.holdings.length;
-            console.log('🎨 Set asset count to:', overview.holdings.length);
         }
 
         // Use existing Portfolio rendering methods
-        console.log('🎨 Allocation length:', overview.allocation.length);
         if (overview.allocation.length > 0) {
-            console.log('🎨 Rendering allocation chart and legend');
-            Portfolio.renderAllocationChart('allocation-chart-overview', overview.allocation);
+            Portfolio.renderAllocationChart('allocation-chart-overview', overview.allocation, true);
             Portfolio.renderAllocationLegend('allocation-legend-overview', overview.allocation);
-        } else {
-            console.log('🎨 No allocation to render');
+
+            // Check if Portfolio tab is active and re-render if needed
+            const overviewView = document.getElementById('overview-view');
+            const portfolioTab = overviewView?.querySelector('.allocation-tab:not(.active)');
+            const activeTab = overviewView?.querySelector('.allocation-tab.active');
+
+            if (activeTab && activeTab.textContent.trim() === 'Portfolio') {
+                // Re-render portfolio allocation if Portfolio tab is active
+                Portfolio.renderPortfolioAllocation();
+            }
         }
 
-        console.log('🎨 Holdings length:', overview.holdings.length);
         if (overview.holdings.length > 0) {
-            console.log('🎨 Rendering holdings table with', overview.holdings.length, 'items');
             Portfolio.renderHoldingsTable(overview.holdings);
         } else {
-            console.log('🎨 No holdings - showing empty message');
             const tbody = document.getElementById('holdings-table-body');
             if (tbody) {
                 tbody.innerHTML = '<tr><td colspan="8" class="empty-message">No holdings yet. Create a portfolio and add transactions to get started.</td></tr>';
@@ -417,7 +432,6 @@ const PortfolioManager = {
         }
 
         // Show overview view
-        console.log('🎨 Switching to overview view');
         document.getElementById('overview-view').classList.add('active');
         document.getElementById('wallet-view').classList.remove('active');
 
@@ -430,10 +444,7 @@ const PortfolioManager = {
         // Load history chart for overview (all portfolios)
         if (Portfolio.historyChartOverview) {
             Portfolio.historyChartOverview.loadData(null, '24h'); // Start with 24h period
-            console.log('📊 Loaded overview history chart');
         }
-
-        console.log('🎨 renderOverview() COMPLETE');
     },
 
     /**
@@ -535,7 +546,7 @@ const PortfolioManager = {
 
         // Render allocation
         if (allocationFinal.length > 0) {
-            Portfolio.renderAllocationChart('allocation-chart-wallet', allocationFinal);
+            Portfolio.renderAllocationChart('allocation-chart-wallet', allocationFinal, true);
             Portfolio.renderAllocationLegend('allocation-legend-wallet', allocationFinal);
         }
 
@@ -586,7 +597,6 @@ const PortfolioManager = {
         // Load history chart for this portfolio
         if (Portfolio.historyChartWallet) {
             Portfolio.historyChartWallet.loadData(portfolioId, '24h'); // Start with 24h period
-            console.log('📊 Loaded wallet history chart for portfolio', portfolioId);
         }
 
         // Show wallet view
@@ -595,14 +605,107 @@ const PortfolioManager = {
     },
 
     /**
-     * Show loading state
+     * Show loading state with skeleton loaders
+     * @param {boolean} includePortfolioCards - Whether to show skeleton for portfolio cards in sidebar
      */
-    showLoadingState() {
-        console.log('Loading portfolio...');
+    showLoadingState(includePortfolioCards = false) {
+        // Show skeleton loaders for header stats
+        this.showHeaderSkeleton();
 
-        // Simply log - don't modify DOM as it causes issues
-        // The actual loading is fast enough not to need a spinner
-        // If needed, we can add a subtle loader later without breaking structure
+        // Show skeleton loaders for holdings table
+        this.showHoldingsTableSkeleton();
+
+        // Show skeleton loaders for portfolio cards in sidebar (only when explicitly requested)
+        if (includePortfolioCards) {
+            this.showPortfolioCardsSkeleton();
+        }
+    },
+
+    /**
+     * Show skeleton loaders for header stats
+     */
+    showHeaderSkeleton() {
+        // Overview header
+        const totalValueEl = document.querySelector('.portfolio-total-value');
+        if (totalValueEl) {
+            totalValueEl.innerHTML = '<div class="skeleton" style="height: 40px; width: 200px; display: inline-block;"></div>';
+        }
+
+        const changeEl = document.querySelector('.portfolio-change');
+        if (changeEl) {
+            changeEl.innerHTML = '<div class="skeleton" style="height: 20px; width: 150px; display: inline-block;"></div>';
+        }
+
+        // Wallet header
+        const walletValueEl = document.getElementById('wallet-total-value');
+        if (walletValueEl) {
+            walletValueEl.innerHTML = '<div class="skeleton" style="height: 32px; width: 180px; display: inline-block;"></div>';
+        }
+
+        const walletChangeEl = document.getElementById('wallet-change');
+        if (walletChangeEl) {
+            walletChangeEl.innerHTML = '<div class="skeleton" style="height: 20px; width: 140px; display: inline-block;"></div>';
+        }
+    },
+
+    /**
+     * Show skeleton loaders for holdings table
+     */
+    showHoldingsTableSkeleton() {
+        const tbody = document.getElementById('holdings-table-body');
+        if (!tbody) return;
+
+        const skeletonRows = Array(5).fill(0).map(() => `
+            <tr>
+                <td><div class="skeleton" style="height: 40px; width: 150px;"></div></td>
+                <td><div class="skeleton" style="height: 24px; width: 80px;"></div></td>
+                <td><div class="skeleton" style="height: 20px; width: 90px;"></div></td>
+                <td><div class="skeleton" style="height: 20px; width: 60px;"></div></td>
+                <td><div class="skeleton" style="height: 20px; width: 60px;"></div></td>
+                <td><div class="skeleton" style="height: 20px; width: 60px;"></div></td>
+                <td><div class="skeleton" style="height: 20px; width: 100px;"></div></td>
+                <td><div class="skeleton" style="height: 20px; width: 110px;"></div></td>
+            </tr>
+        `).join('');
+
+        tbody.innerHTML = skeletonRows;
+
+        // Also show skeleton for mobile cards
+        this.showHoldingsCardsSkeleton();
+    },
+
+    /**
+     * Show skeleton loaders for mobile holdings cards
+     */
+    showHoldingsCardsSkeleton() {
+        const cardsContainer = document.getElementById('holdings-cards');
+        if (!cardsContainer) return;
+
+        const skeletonCards = Array(5).fill(0).map(() => `
+            <div class="skeleton skeleton-card"></div>
+        `).join('');
+
+        cardsContainer.innerHTML = skeletonCards;
+    },
+
+    /**
+     * Show skeleton loaders for portfolio cards in sidebar
+     */
+    showPortfolioCardsSkeleton() {
+        const walletsListContainer = document.querySelector('.wallets-list');
+        if (!walletsListContainer) return;
+
+        const skeletonCards = Array(3).fill(0).map(() => `
+            <div class="wallet-item">
+                <div class="skeleton" style="height: 48px; width: 48px; border-radius: 12px; margin-right: 12px;"></div>
+                <div style="flex: 1;">
+                    <div class="skeleton" style="height: 18px; width: 120px; margin-bottom: 8px;"></div>
+                    <div class="skeleton" style="height: 14px; width: 80px;"></div>
+                </div>
+            </div>
+        `).join('');
+
+        walletsListContainer.innerHTML = skeletonCards;
     },
 
     /**
@@ -652,10 +755,18 @@ const PortfolioManager = {
         modal.classList.add('active');
         document.body.classList.add('modal-open');
 
-        // Setup event listeners if not already done
-        if (!modal.dataset.listenersAdded) {
-            // Form submission
-            document.getElementById('create-portfolio-form').addEventListener('submit', async (e) => {
+        // Clean up previous event listeners if they exist
+        if (this.modalControllers.createPortfolio) {
+            this.modalControllers.createPortfolio.abort();
+        }
+
+        // Create new AbortController for this modal instance
+        const controller = new AbortController();
+        this.modalControllers.createPortfolio = controller;
+        const { signal } = controller;
+
+        // Form submission
+        document.getElementById('create-portfolio-form').addEventListener('submit', async (e) => {
                 e.preventDefault();
                 const name = document.getElementById('portfolio-name').value.trim();
                 const submitBtn = e.target.querySelector('button[type="submit"]');
@@ -685,30 +796,27 @@ const PortfolioManager = {
                     submitBtn.disabled = false;
                     submitBtn.textContent = originalText;
                 }
-            });
+            }, { signal });
 
-            // Cancel button
-            document.getElementById('cancel-create-portfolio').addEventListener('click', () => {
+        // Cancel button
+        document.getElementById('cancel-create-portfolio').addEventListener('click', () => {
+            modal.classList.remove('active');
+            document.body.classList.remove('modal-open');
+        }, { signal });
+
+        // Close button
+        modal.querySelector('.modal-close').addEventListener('click', () => {
+            modal.classList.remove('active');
+            document.body.classList.remove('modal-open');
+        }, { signal });
+
+        // Backdrop click
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
                 modal.classList.remove('active');
                 document.body.classList.remove('modal-open');
-            });
-
-            // Close button
-            modal.querySelector('.modal-close').addEventListener('click', () => {
-                modal.classList.remove('active');
-                document.body.classList.remove('modal-open');
-            });
-
-            // Backdrop click
-            modal.addEventListener('click', (e) => {
-                if (e.target === modal) {
-                    modal.classList.remove('active');
-                    document.body.classList.remove('modal-open');
-                }
-            });
-
-            modal.dataset.listenersAdded = 'true';
-        }
+            }
+        }, { signal });
     },
 
     /**
@@ -733,10 +841,18 @@ const PortfolioManager = {
         modal.classList.add('active');
         document.body.classList.add('modal-open');
 
-        // Setup event listeners if not already done
-        if (!modal.dataset.listenersAdded) {
-            // Form submission
-            document.getElementById('edit-portfolio-form').addEventListener('submit', async (e) => {
+        // Clean up previous event listeners if they exist
+        if (this.modalControllers.editPortfolio) {
+            this.modalControllers.editPortfolio.abort();
+        }
+
+        // Create new AbortController for this modal instance
+        const controller = new AbortController();
+        this.modalControllers.editPortfolio = controller;
+        const { signal } = controller;
+
+        // Form submission
+        document.getElementById('edit-portfolio-form').addEventListener('submit', async (e) => {
                 e.preventDefault();
                 const id = parseInt(document.getElementById('edit-portfolio-id').value);
                 const name = document.getElementById('edit-portfolio-name').value.trim();
@@ -768,38 +884,35 @@ const PortfolioManager = {
                     errorDiv.textContent = error.message || 'Failed to update portfolio';
                     errorDiv.style.display = 'block';
                 }
-            });
+            }, { signal });
 
-            // Delete button
-            document.getElementById('delete-portfolio-btn').addEventListener('click', async () => {
-                const id = parseInt(document.getElementById('edit-portfolio-id').value);
-                await this.deletePortfolio(id);
+        // Delete button
+        document.getElementById('delete-portfolio-btn').addEventListener('click', async () => {
+            const id = parseInt(document.getElementById('edit-portfolio-id').value);
+            await this.deletePortfolio(id);
+            modal.classList.remove('active');
+            document.body.classList.remove('modal-open');
+        }, { signal });
+
+        // Cancel button
+        document.getElementById('cancel-edit-portfolio').addEventListener('click', () => {
+            modal.classList.remove('active');
+            document.body.classList.remove('modal-open');
+        }, { signal });
+
+        // Close button
+        modal.querySelector('.modal-close').addEventListener('click', () => {
+            modal.classList.remove('active');
+            document.body.classList.remove('modal-open');
+        }, { signal });
+
+        // Backdrop click
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
                 modal.classList.remove('active');
                 document.body.classList.remove('modal-open');
-            });
-
-            // Cancel button
-            document.getElementById('cancel-edit-portfolio').addEventListener('click', () => {
-                modal.classList.remove('active');
-                document.body.classList.remove('modal-open');
-            });
-
-            // Close button
-            modal.querySelector('.modal-close').addEventListener('click', () => {
-                modal.classList.remove('active');
-                document.body.classList.remove('modal-open');
-            });
-
-            // Backdrop click
-            modal.addEventListener('click', (e) => {
-                if (e.target === modal) {
-                    modal.classList.remove('active');
-                    document.body.classList.remove('modal-open');
-                }
-            });
-
-            modal.dataset.listenersAdded = 'true';
-        }
+            }
+        }, { signal });
     },
 
     /**

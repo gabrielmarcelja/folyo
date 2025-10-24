@@ -1669,6 +1669,88 @@ input:focus-visible {
     gap: 6px;
 }
 
+/* Transactions Filters */
+.transactions-filters {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+.filter-group {
+    flex: 1;
+    min-width: 200px;
+}
+
+.filter-input,
+.filter-select {
+    width: 100%;
+    padding: 10px 14px;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    font-size: 14px;
+    font-family: inherit;
+    transition: border-color 0.2s;
+}
+
+.filter-input:focus,
+.filter-select:focus {
+    outline: none;
+    border-color: var(--primary-color);
+}
+
+.filter-input::placeholder {
+    color: var(--text-tertiary);
+}
+
+.filter-select {
+    cursor: pointer;
+}
+
+/* Sortable Table Headers */
+.sortable {
+    cursor: pointer;
+    user-select: none;
+    position: relative;
+    transition: background-color 0.2s;
+}
+
+.sortable:hover {
+    background-color: var(--bg-hover) !important;
+}
+
+.sort-icon {
+    display: inline-block;
+    width: 12px;
+    margin-left: 4px;
+    opacity: 0.3;
+    transition: opacity 0.2s;
+}
+
+.sort-icon::before {
+    content: '⇅';
+    font-size: 12px;
+}
+
+.sortable.sort-asc .sort-icon::before {
+    content: '▲';
+    opacity: 1;
+}
+
+.sortable.sort-desc .sort-icon::before {
+    content: '▼';
+    opacity: 1;
+}
+
+.sortable.sort-asc .sort-icon,
+.sortable.sort-desc .sort-icon {
+    opacity: 1;
+    color: var(--primary-color);
+}
+
 .transactions-table {
     width: 100%;
     border-collapse: collapse;
@@ -1815,75 +1897,6 @@ input:focus-visible {
     font-size: 14px;
     color: var(--text-secondary);
     margin-bottom: 24px;
-}
-
-/* Transactions Mobile Cards */
-.transactions-cards {
-    display: none;
-}
-
-@media (max-width: 1024px) {
-    .transactions-table {
-        display: none;
-    }
-
-    .transactions-cards {
-        display: block;
-    }
-}
-
-.transaction-card {
-    background: var(--bg-primary);
-    border: 1px solid var(--border-color);
-    border-radius: 12px;
-    padding: 16px;
-    margin-bottom: 12px;
-}
-
-.transaction-card-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 16px;
-}
-
-.transaction-card-date {
-    font-size: 12px;
-    color: var(--text-secondary);
-}
-
-.transaction-card-body {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 12px;
-}
-
-.transaction-card-field {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-}
-
-.transaction-card-field-label {
-    font-size: 11px;
-    color: var(--text-secondary);
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-}
-
-.transaction-card-field-value {
-    font-size: 14px;
-    font-weight: 600;
-    color: var(--text-primary);
-}
-
-.transaction-card-footer {
-    margin-top: 16px;
-    padding-top: 16px;
-    border-top: 1px solid var(--border-color);
-    display: flex;
-    justify-content: flex-end;
-    gap: 8px;
 }
 
 /* Responsive Adjustments */

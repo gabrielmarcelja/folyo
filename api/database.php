@@ -4,12 +4,43 @@
  * PDO connection to MariaDB database
  */
 
-// Database configuration
-define('DB_HOST', 'localhost');
-define('DB_NAME', 'folyo');
-define('DB_USER', 'folyo_user');
-define('DB_PASS', 'folyo_password_2024');
-define('DB_CHARSET', 'utf8mb4');
+// Load environment variables from .env file
+function loadEnv($filePath = __DIR__ . '/../.env') {
+    if (!file_exists($filePath)) {
+        throw new Exception('.env file not found. Please copy .env.example to .env and configure it.');
+    }
+
+    $lines = file($filePath, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+    foreach ($lines as $line) {
+        // Skip comments and empty lines
+        if (strpos(trim($line), '#') === 0 || trim($line) === '') {
+            continue;
+        }
+
+        // Parse line
+        if (strpos($line, '=') !== false) {
+            list($name, $value) = explode('=', $line, 2);
+            $name = trim($name);
+            $value = trim($value);
+
+            // Set as environment variable if not already set
+            if (!array_key_exists($name, $_ENV)) {
+                $_ENV[$name] = $value;
+                putenv("$name=$value");
+            }
+        }
+    }
+}
+
+// Load environment variables
+loadEnv();
+
+// Database configuration from environment variables
+define('DB_HOST', $_ENV['DB_HOST'] ?? 'localhost');
+define('DB_NAME', $_ENV['DB_NAME'] ?? 'folyo');
+define('DB_USER', $_ENV['DB_USER'] ?? 'folyo_user');
+define('DB_PASS', $_ENV['DB_PASS'] ?? '');
+define('DB_CHARSET', $_ENV['DB_CHARSET'] ?? 'utf8mb4');
 
 // Global PDO connection
 $pdo = null;
@@ -137,4 +168,97 @@ function commit() {
 function rollback() {
     $pdo = getDB();
     return $pdo->rollBack();
+}
+
+/**
+ * Get the base URL of the application
+ * @return string Base URL (e.g., "https://example.com")
+ */
+function getBaseUrl() {
+    // Check if HTTPS is enabled
+    $isHttps = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ||
+               $_SERVER['SERVER_PORT'] == 443 ||
+               (!empty($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https');
+
+    $protocol = $isHttps ? 'https://' : 'http://';
+    $host = $_SERVER['HTTP_HOST'] ?? 'localhost';
+
+    return $protocol . $host;
+}
+
+/**
+ * Get cached data
+ * @param string $key Cache key
+ * @return mixed|null Cached data or null if not found/expired
+ */
+function getCache($key) {
+    $cacheDir = __DIR__ . '/../cache';
+    if (!is_dir($cacheDir)) {
+        mkdir($cacheDir, 0755, true);
+    }
+
+    $cacheFile = $cacheDir . '/' . md5($key) . '.cache';
+
+    if (!file_exists($cacheFile)) {
+        return null;
+    }
+
+    $data = file_get_contents($cacheFile);
+    $cached = json_decode($data, true);
+
+    // Check expiry
+    if (!$cached || !isset($cached['expires']) || $cached['expires'] < time()) {
+        @unlink($cacheFile);
+        return null;
+    }
+
+    return $cached['data'];
+}
+
+/**
+ * Set cache data
+ * @param string $key Cache key
+ * @param mixed $data Data to cache
+ * @param int $ttl Time to live in seconds (default: 300 = 5 minutes)
+ */
+function setCache($key, $data, $ttl = 300) {
+    $cacheDir = __DIR__ . '/../cache';
+    if (!is_dir($cacheDir)) {
+        mkdir($cacheDir, 0755, true);
+    }
+
+    $cacheFile = $cacheDir . '/' . md5($key) . '.cache';
+
+    $cached = [
+        'expires' => time() + $ttl,
+        'data' => $data,
+        'created_at' => time()
+    ];
+
+    file_put_contents($cacheFile, json_encode($cached));
+}
+
+/**
+ * Clear cache by key or pattern
+ * @param string|null $key Cache key or null to clear all
+ */
+function clearCache($key = null) {
+    $cacheDir = __DIR__ . '/../cache';
+    if (!is_dir($cacheDir)) {
+        return;
+    }
+
+    if ($key === null) {
+        // Clear all cache files
+        $files = glob($cacheDir . '/*.cache');
+        foreach ($files as $file) {
+            @unlink($file);
+        }
+    } else {
+        // Clear specific key
+        $cacheFile = $cacheDir . '/' . md5($key) . '.cache';
+        if (file_exists($cacheFile)) {
+            @unlink($cacheFile);
+        }
+    }
 }

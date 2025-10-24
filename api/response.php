@@ -153,3 +153,76 @@ function sanitizeString($input) {
 function sanitizeEmail($email) {
     return filter_var(trim($email), FILTER_SANITIZE_EMAIL);
 }
+
+/**
+ * Validate password strength
+ * @param string $password Password to validate
+ * @return array ['valid' => bool, 'message' => string, 'errors' => array]
+ */
+function validatePasswordStrength($password) {
+    $errors = [];
+    $minLength = 8;
+    $maxLength = 128;
+
+    // Check length
+    $length = strlen($password);
+    if ($length < $minLength) {
+        $errors[] = "Password must be at least {$minLength} characters long";
+    }
+    if ($length > $maxLength) {
+        $errors[] = "Password must not exceed {$maxLength} characters";
+    }
+
+    // Check for at least one lowercase letter
+    if (!preg_match('/[a-z]/', $password)) {
+        $errors[] = "Password must contain at least one lowercase letter";
+    }
+
+    // Check for at least one uppercase letter
+    if (!preg_match('/[A-Z]/', $password)) {
+        $errors[] = "Password must contain at least one uppercase letter";
+    }
+
+    // Check for at least one number
+    if (!preg_match('/[0-9]/', $password)) {
+        $errors[] = "Password must contain at least one number";
+    }
+
+    // Check for at least one special character
+    if (!preg_match('/[^a-zA-Z0-9]/', $password)) {
+        $errors[] = "Password must contain at least one special character (!@#$%^&*()_+-=[]{}|;:,.<>?)";
+    }
+
+    // Check for common weak passwords
+    $commonPasswords = [
+        'password', 'password123', '12345678', 'qwerty123', 'abc123456',
+        'password1', 'Password1', 'Password123', 'Admin123', 'Welcome1'
+    ];
+
+    $lowerPassword = strtolower($password);
+    foreach ($commonPasswords as $common) {
+        if (strtolower($common) === $lowerPassword) {
+            $errors[] = "This password is too common and easily guessable";
+            break;
+        }
+    }
+
+    // Check for repeated characters (3+ same characters in a row)
+    if (preg_match('/(.)\1{2,}/', $password)) {
+        $errors[] = "Password should not contain 3 or more repeated characters in a row";
+    }
+
+    if (empty($errors)) {
+        return [
+            'valid' => true,
+            'message' => 'Password is strong',
+            'errors' => []
+        ];
+    }
+
+    return [
+        'valid' => false,
+        'message' => 'Password does not meet strength requirements',
+        'errors' => $errors
+    ];
+}
